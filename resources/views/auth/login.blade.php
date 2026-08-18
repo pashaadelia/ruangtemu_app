@@ -1,56 +1,147 @@
 <x-layouts.guest>
-    <div class="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-        <div class="w-full max-w-sm bg-white rounded-2xl shadow-md p-8">
-            <div class="flex justify-center mb-4">
-                <div class="bg-cyan-600 text-white p-3 rounded-lg">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+    <div class="min-h-screen flex items-center justify-center bg-slate-50 px-4">
+        <div class="w-full max-w-md bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
+
+            {{-- Logo & Judul --}}
+            <div class="flex flex-col items-center text-center mb-6">
+                <div class="w-14 h-14 rounded-xl bg-cyan-600 flex items-center justify-center mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M6 3h9a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H6" />
+                        <path d="M6 3v18" />
+                        <circle cx="9" cy="12" r="0.5" fill="currentColor" />
                     </svg>
                 </div>
+                <h1 class="text-3xl font-bold text-cyan-600">RuangTemu</h1>
+                <p class="text-slate-700 mt-1">Sistem Manajemen Jadwal Ruangan Rapat</p>
             </div>
-            <h1 class="text-xl font-bold text-cyan-700 text-center">RuangTemu</h1>
-            <p class="text-gray-500 text-sm text-center mb-6">
-                Login sebagai {{ ucfirst($role) }}
-            </p>
+
+            {{-- Pesan Error / Status --}}
+            @if (session('status'))
+                <div class="mb-4 text-sm font-medium text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-2">
+                    {{ session('status') }}
+                </div>
+            @endif
 
             @if ($errors->any())
-                <div class="bg-red-50 text-red-600 text-sm rounded-lg p-3 mb-4">
+                <div class="mb-4 text-sm font-medium text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-2">
                     {{ $errors->first() }}
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('login.submit') }}">
+            <form x-data="{ loading: false, showPassword: false }"
+                  @submit="loading = true"
+                  method="POST"
+                  action="{{ route('login.submit') }}"
+                  class="space-y-5">
                 @csrf
-                <input type="hidden" name="role" value="{{ $role }}">
+                <input type="hidden" name="role" value="{{ $role ?? request('role') }}">
 
-                <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
-                <input type="text" name="username" value="{{ old('username') }}"
-                       class="w-full border border-gray-300 rounded-lg px-3 py-2 mb-4 focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                       placeholder="Masukkan username Anda">
+                {{-- Username --}}
+                <div>
+                    <label for="username" class="block text-sm font-medium text-slate-700 mb-1.5">
+                        Username
+                    </label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                <circle cx="12" cy="7" r="4" />
+                            </svg>
+                        </span>
+                        <input
+                            id="username"
+                            type="text"
+                            name="username"
+                            value="{{ old('username') }}"
+                            placeholder="Masukkan username Anda"
+                            required
+                            autofocus
+                            autocomplete="username"
+                            class="w-full rounded-lg border border-slate-300 pl-10 pr-4 py-2.5 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition"
+                        >
+                    </div>
+                    @error('username')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
 
-                <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                <input type="password" name="password"
-                       class="w-full border border-gray-300 rounded-lg px-3 py-2 mb-2 focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                       placeholder="Masukkan password Anda">
+                {{-- Password --}}
+                <div>
+                    <label for="password" class="block text-sm font-medium text-slate-700 mb-1.5">
+                        Password
+                    </label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="4" y="11" width="16" height="9" rx="2" />
+                                <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+                            </svg>
+                        </span>
+                        <input
+                            id="password"
+                            :type="showPassword ? 'text' : 'password'"
+                            name="password"
+                            placeholder="Masukkan password Anda"
+                            required
+                            autocomplete="current-password"
+                            class="w-full rounded-lg border border-slate-300 pl-10 pr-11 py-2.5 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition"
+                        >
+                        <button
+                            type="button"
+                            @click="showPassword = !showPassword"
+                            class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-slate-600"
+                            tabindex="-1"
+                        >
+                            <svg x-show="!showPassword" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z" />
+                                <circle cx="12" cy="12" r="3" />
+                            </svg>
+                            <svg x-show="showPassword" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a21.6 21.6 0 0 1 5.06-5.94M9.9 4.24A10.4 10.4 0 0 1 12 4c7 0 11 7 11 7a21.6 21.6 0 0 1-3.11 4.24M14.12 14.12a3 3 0 1 1-4.24-4.24" />
+                                <path d="M1 1l22 22" />
+                            </svg>
+                        </button>
+                    </div>
+                    @error('password')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
 
-                <div class="flex items-center justify-between mb-4 text-sm">
-                    <label class="flex items-center gap-2 text-gray-600">
-                        <input type="checkbox" name="remember" class="rounded border-gray-300">
+                    {{-- Route 'password.request' belum ada di routes/web.php, jadi link ini
+                         sementara dihilangkan. Aktifkan lagi kalau fitur lupa password sudah dibuat.
+                    <div class="flex justify-end mt-2">
+                        <a href="{{ route('password.request') }}" class="text-sm text-cyan-600 hover:text-cyan-700 underline">
+                            Lupa password?
+                        </a>
+                    </div>
+                    --}}
+                </div>
+
+                {{-- Ingat saya --}}
+                <div class="flex items-center">
+                    <input
+                        id="remember"
+                        type="checkbox"
+                        name="remember"
+                        class="w-4 h-4 rounded border-slate-300 text-cyan-600 focus:ring-cyan-500"
+                    >
+                    <label for="remember" class="ml-2 text-sm text-slate-700">
                         Ingat saya di perangkat ini
                     </label>
                 </div>
 
-                <button type="submit"
-                        class="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-medium py-2.5 rounded-lg transition">
-                    Masuk
+                {{-- Tombol Masuk --}}
+                <button
+                    type="submit"
+                    :disabled="loading"
+                    class="w-full bg-cyan-600 hover:bg-cyan-700 disabled:opacity-70 disabled:cursor-not-allowed text-white font-semibold py-2.5 rounded-lg transition flex items-center justify-center gap-2"
+                >
+                    <svg x-show="loading" class="w-4 h-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                    </svg>
+                    <span x-text="loading ? 'Memproses...' : 'Masuk'"></span>
                 </button>
             </form>
-
-            @if ($role === 'user')
-                <p class="text-center text-sm text-gray-500 mt-4">
-                    Belum punya akun? <a href="{{ route('register') }}" class="text-cyan-600 hover:underline">Daftar</a>
-                </p>
-            @endif
         </div>
     </div>
 </x-layouts.guest>
