@@ -56,4 +56,9 @@ class AuthController extends Controller
 
         return redirect()->route('welcome');
     }
+
+    public function showForgotPasswordForm()
+    {
+        return view('auth.reset-password');
+    }
 }
