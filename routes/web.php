@@ -1,8 +1,9 @@
 <?php
 
 use App\Http\Controllers\AuthController;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\JadwalController;
+use Illuminate\Support\Facades\Route;
 
 // Halaman awal pilih role
 Route::get('/', function () {
@@ -18,9 +19,15 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Area Admin
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/dashboard', function () {
-        return view('admin.dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/jadwal', [JadwalController::class, 'index'])->name('jadwal');
+    Route::get('/riwayat', function () {
+        return view('admin.riwayat'); // buat view kosong dulu kalau perlu
+    })->name('riwayat');
+
+    Route::get('/pengaturan', function () {
+        return view('admin.pengaturan');
+    })->name('pengaturan');
 });
 
 // Area User
@@ -28,8 +35,4 @@ Route::middleware(['auth', 'role:user'])->prefix('user')->name('user.')->group(f
     Route::get('/dashboard', function () {
         return view('user.dashboard');
     })->name('dashboard');
-});
-
-Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 });
