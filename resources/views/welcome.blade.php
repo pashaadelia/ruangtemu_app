@@ -3,8 +3,10 @@
         <div class="w-full max-w-sm bg-white rounded-2xl shadow-md p-8 text-center">
             <div class="flex justify-center mb-4">
                 <div class="bg-cyan-600 text-white p-3 rounded-lg">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M6 3h9a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H6" />
+                        <path d="M6 3v18" />
+                        <circle cx="9" cy="12" r="0.5" fill="currentColor" />
                     </svg>
                 </div>
             </div>
