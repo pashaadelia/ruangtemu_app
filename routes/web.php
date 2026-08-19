@@ -2,10 +2,9 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\User\JadwalController as UserJadwalController;
-use App\Http\Controllers\User\JadwalController;
+use App\Http\Controllers\Admin\JadwalController;
+use App\Http\Controllers\Admin\PengaturanController;
 use Illuminate\Support\Facades\Route;
-
 
 // Halaman awal pilih role
 Route::get('/', function () {
@@ -15,6 +14,8 @@ Route::get('/', function () {
 // Auth
 Route::get('/login/{role}', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
+Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
+Route::post('/register', [AuthController::class, 'register'])->name('register.submit');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/forgot-password', [AuthController::class, 'showForgotPasswordForm'])->name('password.request');
 Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])->name('password.email');
@@ -28,13 +29,16 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/riwayat', function () {
         return view('admin.riwayat'); // buat view kosong dulu kalau perlu
     })->name('riwayat');
-
-    Route::get('/pengaturan', function () {
-        return view('admin.pengaturan');
-    })->name('pengaturan');
+    
+Route::get('/pengaturan', [PengaturanController::class, 'index'])->name('pengaturan');
+Route::put('/pengaturan/profil', [PengaturanController::class, 'updateProfil'])->name('pengaturan.profil');
+Route::put('/pengaturan/keamanan', [PengaturanController::class, 'updateKeamanan'])->name('pengaturan.keamanan');
+    
 });
 
 // Area User
-Route::prefix('user')->name('user.')->group(function () {
-    Route::get('/dashboard', [\App\Http\Controllers\User\JadwalController::class, 'index'])->name('dashboard');
+Route::middleware(['auth', 'role:user'])->prefix('user')->name('user.')->group(function () {
+    Route::get('/dashboard', function () {
+        return view('user.dashboard');
+    })->name('dashboard');
 });
