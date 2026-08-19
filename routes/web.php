@@ -2,8 +2,10 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\JadwalController;
+use App\Http\Controllers\User\JadwalController as UserJadwalController;
+use App\Http\Controllers\User\JadwalController;
 use Illuminate\Support\Facades\Route;
+
 
 // Halaman awal pilih role
 Route::get('/', function () {
@@ -33,8 +35,6 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 });
 
 // Area User
-Route::middleware(['auth', 'role:user'])->prefix('user')->name('user.')->group(function () {
-    Route::get('/dashboard', function () {
-        return view('user.dashboard');
-    })->name('dashboard');
+Route::prefix('user')->name('user.')->group(function () {
+    Route::get('/dashboard', [\App\Http\Controllers\User\JadwalController::class, 'index'])->name('dashboard');
 });
