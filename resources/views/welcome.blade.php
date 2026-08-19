@@ -14,11 +14,11 @@
             <p class="text-gray-500 text-sm mt-1 mb-6">Sistem Manajemen Jadwal Ruangan Rapat</p>
 
             <a href="{{ route('login', 'admin') }}"
-               class="block w-full bg-cyan-600 hover:bg-cyan-700 text-white font-medium py-2.5 rounded-lg mb-3 transition">
+                class="block w-full bg-cyan-600 hover:bg-cyan-700 text-white font-medium py-2.5 rounded-lg mb-3 transition">
                 Masuk Sebagai Admin
             </a>
-            <a href="{{ route('login', 'user') }}"
-               class="block w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2.5 rounded-lg transition">
+            <a href="{{ route('user.dashboard') }}"
+                class="block w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2.5 rounded-lg transition">
                 Masuk Sebagai User
             </a>
         </div>
