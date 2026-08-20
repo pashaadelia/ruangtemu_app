@@ -106,14 +106,11 @@
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
 
-                    {{-- Route 'password.request' belum ada di routes/web.php, jadi link ini
-                         sementara dihilangkan. Aktifkan lagi kalau fitur lupa password sudah dibuat.
                     <div class="flex justify-end mt-2">
                         <a href="{{ route('password.request') }}" class="text-sm text-cyan-600 hover:text-cyan-700 underline">
                             Lupa password?
                         </a>
                     </div>
-                    --}}
                 </div>
 
                 {{-- Ingat saya --}}

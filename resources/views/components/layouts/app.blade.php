@@ -13,15 +13,42 @@
 
         {{-- Sidebar --}}
         <aside class="w-64 bg-gray-100 border-r border-gray-200 flex flex-col">
-            <div class="p-6 flex items-center gap-3">
-                <img src="{{ auth()->user()->foto_profil ? asset(auth()->user()->foto_profil) : 'https://ui-avatars.com/api/?name=' . urlencode(auth()->user()->name) }}"
-                    alt="Foto profil"
-                    class="w-11 h-11 rounded-full object-cover">
-                <div>
-                    <p class="font-bold text-cyan-600 leading-tight">{{ auth()->user()->name }}</p>
-                    <p class="text-xs text-gray-500">{{ auth()->user()->divisi->nama_divisi ?? 'Divisi Admin dan Keuangan' }}</p>
+            {{-- Profil dengan dropdown logout --}}
+            <div class="p-6 relative" x-data="{ open: false }">
+                <button @click="open = !open" @click.outside="open = false"
+                    class="flex items-center gap-3 w-full text-left">
+                    <img src="{{ auth()->user()->foto_profil ? asset(auth()->user()->foto_profil) : 'https://ui-avatars.com/api/?name=' . urlencode(auth()->user()->name) }}"
+                        alt="Foto profil"
+                        class="w-11 h-11 rounded-full object-cover shrink-0">
+                    <div class="flex-1 min-w-0">
+                        <p class="font-bold text-cyan-600 leading-tight truncate">{{ auth()->user()->name }}</p>
+                        <p class="text-xs text-gray-500 truncate">{{ auth()->user()->divisi->nama_divisi ?? 'Divisi Admin dan Keuangan' }}</p>
+                    </div>
+                    <svg class="w-4 h-4 text-gray-400 shrink-0 transition-transform"
+                        :class="open && 'rotate-180'"
+                        fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </button>
+
+                {{-- Dropdown --}}
+                <div x-show="open"
+                    x-transition
+                    class="absolute left-6 right-6 top-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden z-20"
+                    style="display: none;">
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit"
+                            class="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition text-left">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                            </svg>
+                            Logout
+                        </button>
+                    </form>
                 </div>
             </div>
+
 
             <nav class="flex-1 px-4 space-y-1">
                 <a href="{{ route('admin.dashboard') }}"
@@ -68,7 +95,7 @@
             {{ $slot }}
         </main>
     </div>
-      @stack('scripts')
+    @stack('scripts')
 </body>
 
 </html>
