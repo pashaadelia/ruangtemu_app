@@ -18,6 +18,7 @@ class Booking extends Model
         'nama_tamu',
         'total_peserta',
         'catatan',
+        'informasi_tambahan',
         'status_booking',
     ];
 
