@@ -4,7 +4,6 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\JadwalController;
 use App\Http\Controllers\Admin\RiwayatController;
-use App\Http\Controllers\Admin\BookingController;
 use App\Http\Controllers\Admin\PengaturanController;
 use Illuminate\Support\Facades\Route;
 
@@ -38,7 +37,6 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::post('/booking', [BookingController::class, 'store'])->name('booking.store');
     Route::get('/booking/availability', [BookingController::class, 'availability'])->name('booking.availability');
     Route::get('/booking/{id}', [JadwalController::class, 'show'])->name('booking.show');
-
     Route::get('/pengaturan', [PengaturanController::class, 'index'])->name('pengaturan');
     Route::put('/pengaturan/profil', [PengaturanController::class, 'updateProfil'])->name('pengaturan.profil');
     Route::put('/pengaturan/keamanan', [PengaturanController::class, 'updateKeamanan'])->name('pengaturan.keamanan');
