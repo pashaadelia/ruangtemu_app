@@ -77,7 +77,7 @@
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z"/>
                             </svg>
-                            <span x-text="saving ? 'Menyimpan...' : 'Simpan Perubahan'"></span>
+                            <span x-text="saving ? 'Menyimpan...' : 'Simpan Perubahan'">Simpan Perubahan</span>
                         </button>
                     </div>
                 </form>
@@ -179,7 +179,7 @@
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z"/>
                             </svg>
-                            <span x-text="updating ? 'Memperbarui...' : 'Update Keamanan'"></span>
+                            <span x-text="updating ? 'Memperbarui...' : 'Update Keamanan'">Update Keamanan</span>
                         </button>
                     </div>
                 </form>
