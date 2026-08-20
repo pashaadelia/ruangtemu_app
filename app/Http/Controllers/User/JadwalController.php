@@ -19,9 +19,9 @@ class JadwalController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('nama_rapat', 'like', "%{$search}%")
-                  ->orWhereHas('ruangan', function ($q2) use ($search) {
-                      $q2->where('nama_ruangan', 'like', "%{$search}%");
-                  });
+                    ->orWhereHas('ruangan', function ($q2) use ($search) {
+                        $q2->where('nama_ruangan', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -33,5 +33,12 @@ class JadwalController extends Controller
         $ruangans = Ruangan::orderBy('nama_ruangan')->get();
 
         return view('user.dashboard', compact('jadwal', 'ruangans'));
+    }
+
+    public function show($id)
+    {
+        $booking = Booking::with(['ruangan.fasilitas', 'divisi'])->findOrFail($id);
+
+        return view('user.detail-rapat', compact('booking'));
     }
 }

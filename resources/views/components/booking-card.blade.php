@@ -2,15 +2,24 @@
 
 @php
     $statusConfig = [
-        'menunggu'   => ['label' => 'Menunggu',   'class' => 'bg-cyan-100 text-cyan-700'],
+        'menunggu'   => ['label' => 'Menunggu',    'class' => 'bg-cyan-100 text-cyan-700'],
         'disetujui'  => ['label' => 'Berlangsung', 'class' => 'bg-blue-100 text-blue-700'],
-        'selesai'    => ['label' => 'Selesai',    'class' => 'bg-green-100 text-green-700'],
-        'ditolak'    => ['label' => 'Dibatalkan', 'class' => 'bg-red-100 text-red-700'],
+        'selesai'    => ['label' => 'Selesai',     'class' => 'bg-green-100 text-green-700'],
+        'ditolak'    => ['label' => 'Dibatalkan',  'class' => 'bg-red-100 text-red-700'],
     ];
     $status = $statusConfig[$booking->status_booking] ?? $statusConfig['menunggu'];
+
+    $detailRoute = request()->is('admin/*')
+        ? route('admin.booking.show', $booking->id)
+        : route('user.booking.show', $booking->id);
+
+    $editRoute = Route::has('admin.booking.edit')
+        ? route('admin.booking.edit', $booking->id)
+        : '#';
 @endphp
 
-<div class="bg-white border border-gray-200 rounded-xl p-5">
+<a href="{{ $detailRoute }}"
+   class="block bg-white border border-gray-200 rounded-xl p-5 hover:shadow-md hover:border-cyan-300 transition cursor-pointer">
     <div class="flex items-start justify-between mb-1">
         <h3 class="font-bold text-gray-900">{{ $booking->ruangan->nama_ruangan }}</h3>
         <span class="text-xs font-medium px-3 py-1 rounded-full whitespace-nowrap {{ $status['class'] }}">
@@ -43,13 +52,13 @@
     </div>
 
     @if ($editable)
-        <div class="mt-4 pt-3 border-t border-gray-100 flex justify-end">
-            <a href="{{ route('admin.booking.edit', $booking->id) ?? '#' }}"
-               class="text-cyan-600 hover:text-cyan-700">
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                </svg>
-            </a>
-        </div>
-    @endif
-</div>
+    <div class="mt-4 pt-3 border-t border-gray-100 flex justify-end">
+        <span onclick="event.preventDefault(); window.location='{{ $editRoute }}'"
+              class="text-cyan-600 hover:text-cyan-700 relative z-10">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+            </svg>
+        </span>
+    </div>
+@endif
+</a>
