@@ -3,6 +3,8 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\JadwalController;
+use App\Http\Controllers\Admin\RiwayatController;
+use App\Http\Controllers\Admin\BookingController;
 use App\Http\Controllers\Admin\PengaturanController;
 use Illuminate\Support\Facades\Route;
 
@@ -25,11 +27,17 @@ Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('
 // Area Admin
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
     Route::get('/jadwal', [JadwalController::class, 'index'])->name('jadwal');
+    Route::get('/jadwal/hari-ini', [JadwalController::class, 'hariIni'])->name('jadwal.hari-ini');
+
+    Route::get('/riwayat', [RiwayatController::class, 'index'])->name('riwayat');
+
+    // Route spesifik booking (create, availability) HARUS di atas route dengan parameter {id}
+    Route::get('/booking/create', [BookingController::class, 'create'])->name('booking.create');
+    Route::post('/booking', [BookingController::class, 'store'])->name('booking.store');
+    Route::get('/booking/availability', [BookingController::class, 'availability'])->name('booking.availability');
     Route::get('/booking/{id}', [JadwalController::class, 'show'])->name('booking.show');
-    Route::get('/riwayat', function () {
-        return view('admin.riwayat'); // buat view kosong dulu kalau perlu
-    })->name('riwayat');
 
     Route::get('/pengaturan', [PengaturanController::class, 'index'])->name('pengaturan');
     Route::put('/pengaturan/profil', [PengaturanController::class, 'updateProfil'])->name('pengaturan.profil');

@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('nama_tamu')->nullable();
             $table->integer('total_peserta');
             $table->text('catatan')->nullable();
-            $table->tinyInteger('status_booking')->default(0); // 0=menunggu,1=disetujui,2=ditolak,3=selesai
+            $table->string('status_booking')->default('menunggu');
             $table->timestamps();
         });
     }

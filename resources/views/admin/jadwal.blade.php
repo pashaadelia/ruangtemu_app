@@ -12,7 +12,7 @@
                 <h1 class="text-3xl font-bold text-gray-900">Jadwal Hari Ini</h1>
             </div>
 
-            <a href="#"
+            <a href="{{ route('admin.booking.create') }}"
                class="flex items-center gap-2 bg-cyan-600 hover:bg-cyan-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
