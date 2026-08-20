@@ -20,7 +20,7 @@
     <div class="mb-10">
         <div class="flex items-center justify-between mb-4">
             <h2 class="text-xl font-bold text-gray-900">Jadwal Hari Ini</h2>
-            <a href="{{ route('admin.jadwal') }}" class="text-cyan-600 text-sm font-medium hover:underline">
+            <a href="{{ route('admin.jadwal.hari-ini') }}" class="text-cyan-600 text-sm font-medium hover:underline">
                 Lihat Semua
             </a>
         </div>
