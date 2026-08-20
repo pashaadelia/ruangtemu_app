@@ -26,9 +26,17 @@ Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('
 // Area Admin
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
     Route::get('/jadwal', [JadwalController::class, 'index'])->name('jadwal');
-    Route::get('/booking/{id}', [JadwalController::class, 'show'])->name('booking.show');
+    Route::get('/jadwal/hari-ini', [JadwalController::class, 'hariIni'])->name('jadwal.hari-ini');
+
     Route::get('/riwayat', [RiwayatController::class, 'index'])->name('riwayat');
+
+    // Route spesifik booking (create, availability) HARUS di atas route dengan parameter {id}
+    Route::get('/booking/create', [BookingController::class, 'create'])->name('booking.create');
+    Route::post('/booking', [BookingController::class, 'store'])->name('booking.store');
+    Route::get('/booking/availability', [BookingController::class, 'availability'])->name('booking.availability');
+    Route::get('/booking/{id}', [JadwalController::class, 'show'])->name('booking.show');
     Route::get('/pengaturan', [PengaturanController::class, 'index'])->name('pengaturan');
     Route::put('/pengaturan/profil', [PengaturanController::class, 'updateProfil'])->name('pengaturan.profil');
     Route::put('/pengaturan/keamanan', [PengaturanController::class, 'updateKeamanan'])->name('pengaturan.keamanan');

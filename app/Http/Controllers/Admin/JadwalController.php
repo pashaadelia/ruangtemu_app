@@ -9,24 +9,35 @@ use Illuminate\Http\Request;
 
 class JadwalController extends Controller
 {
+    /**
+     * Halaman Jadwal Ruangan (kalender bulanan) - untuk sidebar
+     */
     public function index(Request $request)
     {
+        $ruangans = Ruangan::orderBy('nama_ruangan')->get();
+
+        return view('admin.jadwal', compact('ruangans'));
+    }
+
+    /**
+     * Halaman "Jadwal Hari Ini" (list + search/filter) - untuk "Lihat Semua" dari dashboard
+     */
+    public function hariIni(Request $request)
+    {
         $query = Booking::with('ruangan')
-            ->orderBy('tanggal')
+            ->whereDate('tanggal', today())
             ->orderBy('jam_masuk');
 
-        // Pencarian berdasarkan nama ruangan atau nama rapat
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('nama_rapat', 'like', "%{$search}%")
-                    ->orWhereHas('ruangan', function ($q2) use ($search) {
-                        $q2->where('nama_ruangan', 'like', "%{$search}%");
-                    });
+                  ->orWhereHas('ruangan', function ($q2) use ($search) {
+                      $q2->where('nama_ruangan', 'like', "%{$search}%");
+                  });
             });
         }
 
-        // Filter berdasarkan ruangan
         if ($request->filled('ruangan')) {
             $query->where('id_ruangan', $request->ruangan);
         }
@@ -34,9 +45,12 @@ class JadwalController extends Controller
         $jadwal = $query->get();
         $ruangans = Ruangan::orderBy('nama_ruangan')->get();
 
-        return view('admin.jadwal', compact('jadwal', 'ruangans'));
+        return view('admin.jadwal-hari-ini', compact('jadwal', 'ruangans'));
     }
 
+    /**
+     * Detail Rapat
+     */
     public function show($id)
     {
         $booking = Booking::with(['ruangan.fasilitas', 'divisi'])->findOrFail($id);
