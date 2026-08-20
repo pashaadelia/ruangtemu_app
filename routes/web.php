@@ -27,16 +27,15 @@ Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/jadwal', [JadwalController::class, 'index'])->name('jadwal');
+    Route::get('/booking/{id}', [JadwalController::class, 'show'])->name('booking.show');
     Route::get('/riwayat', [RiwayatController::class, 'index'])->name('riwayat');
     Route::get('/pengaturan', [PengaturanController::class, 'index'])->name('pengaturan');
     Route::put('/pengaturan/profil', [PengaturanController::class, 'updateProfil'])->name('pengaturan.profil');
     Route::put('/pengaturan/keamanan', [PengaturanController::class, 'updateKeamanan'])->name('pengaturan.keamanan');
-    
 });
 
-// Area User
-Route::middleware(['auth', 'role:user'])->prefix('user')->name('user.')->group(function () {
-    Route::get('/dashboard', function () {
-        return view('user.dashboard');
-    })->name('dashboard');
+// User (Satpam) - tanpa auth
+Route::prefix('user')->name('user.')->group(function () {
+    Route::get('/dashboard', [\App\Http\Controllers\User\JadwalController::class, 'index'])->name('dashboard');
+    Route::get('/booking/{id}', [\App\Http\Controllers\User\JadwalController::class, 'show'])->name('booking.show');
 });
