@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Booking;
+use App\Models\Ruangan;
 use Illuminate\Http\Request;
 
 class RiwayatController extends Controller
@@ -10,26 +12,39 @@ class RiwayatController extends Controller
     /**
      * Menampilkan halaman Riwayat.
      *
-     * NOTE: $riwayats masih berupa array kosong karena belum terhubung
-     * ke database. Nanti tinggal ganti dengan query, misalnya:
-     *
-     * $riwayats = Riwayat::with('ruangan')
-     *     ->when($request->search, fn ($q, $search) =>
-     *         $q->where('judul_meeting', 'like', "%{$search}%")
-     *           ->orWhereHas('ruangan', fn ($q2) =>
-     *               $q2->where('nama', 'like', "%{$search}%")
-     *           )
-     *     )
-     *     ->latest('tanggal')
-     *     ->get();
+     * Riwayat menampilkan booking dengan status:
+     * 2 = ditolak
+     * 3 = selesai
      */
     public function index(Request $request)
     {
-        $riwayats = collect();
+        $query = Booking::with('ruangan')
+            ->whereIn('status_booking', [2, 3])
+            ->orderByDesc('tanggal')
+            ->orderByDesc('jam_masuk');
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('nama_rapat', 'like', "%{$search}%")
+                  ->orWhereHas('ruangan', function ($q2) use ($search) {
+                      $q2->where('nama_ruangan', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        if ($request->filled('ruangan')) {
+            $query->where('id_ruangan', $request->ruangan);
+        }
+
+        $riwayats = $query->get();
+        $ruangans = Ruangan::orderBy('nama_ruangan')->get();
 
         return view('admin.riwayat', [
             'riwayats' => $riwayats,
+            'ruangans' => $ruangans,
             'search'   => $request->query('search'),
+            'ruanganFilter' => $request->query('ruangan'),
         ]);
     }
 }

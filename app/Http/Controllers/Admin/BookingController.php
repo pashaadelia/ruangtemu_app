@@ -59,7 +59,7 @@ class BookingController extends Controller
             return back()->withErrors(['total_peserta' => "Total peserta melebihi kapasitas ruangan ({$ruangan->kapasitas} orang)."])->withInput();
         }
 
-        $validated['status_booking'] = 'menunggu';
+        $validated['status_booking'] = 0;
 
         Booking::create($validated);
 
