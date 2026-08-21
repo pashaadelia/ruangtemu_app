@@ -83,23 +83,6 @@ class AuthController extends Controller
         return redirect()->route('welcome');
     }
 
-    // ==== Forgot / Reset Password ====
-
-    public function showForgotPasswordForm()
-    {
-        return view('auth.forgot-password');
-    }
-
-    public function sendResetLink(Request $request)
-    {
-        $request->validate(['email' => 'required|email']);
-
-        $status = Password::sendResetLink($request->only('email'));
-
-        return $status === Password::RESET_LINK_SENT
-            ? back()->with('status', 'Link reset password telah dikirim ke email Anda.')
-            : back()->withErrors(['email' => __($status)]);
-    }
 
     public function showResetPasswordForm(Request $request, string $token)
     {
