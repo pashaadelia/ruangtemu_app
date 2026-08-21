@@ -2,20 +2,12 @@
 
 @php
     $statusConfig = [
-        'menunggu'   => ['label' => 'Menunggu',    'class' => 'bg-cyan-100 text-cyan-700'],
-        'disetujui'  => ['label' => 'Berlangsung', 'class' => 'bg-blue-100 text-blue-700'],
-        'selesai'    => ['label' => 'Selesai',     'class' => 'bg-green-100 text-green-700'],
-        'ditolak'    => ['label' => 'Dibatalkan',  'class' => 'bg-red-100 text-red-700'],
+        0 => ['label' => 'Menunggu',    'class' => 'bg-cyan-100 text-cyan-700'],
+        1 => ['label' => 'Berlangsung', 'class' => 'bg-blue-100 text-blue-700'],
+        2 => ['label' => 'Dibatalkan',  'class' => 'bg-red-100 text-red-700'],
+        3 => ['label' => 'Selesai',     'class' => 'bg-green-100 text-green-700'],
     ];
-    $status = $statusConfig[$booking->status_booking] ?? $statusConfig['menunggu'];
-
-    $detailRoute = request()->is('admin/*')
-        ? route('admin.booking.show', $booking->id)
-        : route('user.booking.show', $booking->id);
-
-    $editRoute = Route::has('admin.booking.edit')
-        ? route('admin.booking.edit', $booking->id)
-        : '#';
+    $status = $statusConfig[$booking->status_booking] ?? $statusConfig[0];
 @endphp
 
 <a href="{{ $detailRoute }}"

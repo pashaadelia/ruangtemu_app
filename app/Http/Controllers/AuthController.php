@@ -2,9 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
+use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -14,7 +18,6 @@ class AuthController extends Controller
         if (!in_array($role, ['admin', 'user'])) {
             abort(404);
         }
-
         return view('auth.login', ['role' => $role]);
     }
 
@@ -26,18 +29,14 @@ class AuthController extends Controller
             'role' => 'required|in:admin,user',
         ]);
 
-        $user = \App\Models\User::where('username', $request->username)->first();
+        $user = User::where('username', $request->username)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
-            throw ValidationException::withMessages([
-                'username' => 'Username atau password salah.',
-            ]);
+            throw ValidationException::withMessages(['username' => 'Username atau password salah.']);
         }
 
         if ($user->role !== $request->role) {
-            throw ValidationException::withMessages([
-                'username' => 'Akun ini tidak terdaftar sebagai ' . $request->role . '.',
-            ]);
+            throw ValidationException::withMessages(['username' => 'Akun ini tidak terdaftar sebagai ' . $request->role . '.']);
         }
 
         Auth::login($user, $request->boolean('remember'));
@@ -46,6 +45,33 @@ class AuthController extends Controller
         return $user->role === 'admin'
             ? redirect()->route('admin.dashboard')
             : redirect()->route('user.dashboard');
+    }
+
+    public function showRegisterForm()
+    {
+        return view('auth.register');
+    }
+
+    public function register(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'username' => 'required|string|max:255|unique:users,username',
+            'email' => 'required|string|email|max:255|unique:users,email',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $user = User::create([
+            'name' => $validated['name'],
+            'username' => $validated['username'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'role' => 'user',
+        ]);
+
+        Auth::login($user);
+
+        return redirect()->route('user.dashboard');
     }
 
     public function logout(Request $request)
@@ -57,8 +83,54 @@ class AuthController extends Controller
         return redirect()->route('welcome');
     }
 
+    // ==== Forgot / Reset Password ====
+
     public function showForgotPasswordForm()
     {
-        return view('auth.reset-password');
+        return view('auth.forgot-password');
+    }
+
+    public function sendResetLink(Request $request)
+    {
+        $request->validate(['email' => 'required|email']);
+
+        $status = Password::sendResetLink($request->only('email'));
+
+        return $status === Password::RESET_LINK_SENT
+            ? back()->with('status', 'Link reset password telah dikirim ke email Anda.')
+            : back()->withErrors(['email' => __($status)]);
+    }
+
+    public function showResetPasswordForm(Request $request, string $token)
+    {
+        return view('auth.reset-password', [
+            'token' => $token,
+            'email' => $request->email,
+        ]);
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'token' => 'required',
+            'email' => 'required|email',
+            'password' => 'required|min:8|confirmed',
+        ]);
+
+        $status = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function ($user) use ($request) {
+                $user->forceFill([
+                    'password' => Hash::make($request->password),
+                    'remember_token' => Str::random(60),
+                ])->save();
+
+                event(new PasswordReset($user));
+            }
+        );
+
+        return $status === Password::PASSWORD_RESET
+            ? redirect()->route('login', 'admin')->with('status', 'Password berhasil diubah, silakan login.')
+            : back()->withErrors(['email' => __($status)]);
     }
 }

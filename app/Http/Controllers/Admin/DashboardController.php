@@ -16,7 +16,7 @@ class DashboardController extends Controller
             ->get();
 
         $riwayat = Booking::with('ruangan')
-            ->whereIn('status_booking', ['selesai', 'ditolak'])
+            ->whereIn('status_booking', [2, 3]) // ditolak, selesai
             ->orderByDesc('tanggal')
             ->take(6)
             ->get();
