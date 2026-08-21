@@ -22,53 +22,26 @@ class BookingController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'nama_rapat' => 'required|string|max:255',
-            'tujuan_rapat' => 'nullable|string',
-            'tanggal' => 'required|date',
-            'jam_masuk' => 'required',
-            'jam_keluar' => 'required|after:jam_masuk',
-            'id_ruangan' => 'required|exists:ruangans,id',
-            'id_divisi' => 'required|exists:divisis,id',
-            'nama_penanggung_jawab' => 'required|string|max:255',
-            'nama_tamu' => 'nullable|string|max:255',
-            'total_peserta' => 'required|integer|min:1',
-            'catatan' => 'nullable|string',
-        ]);
+        $validated = $this->validateBooking($request);
 
-        // Cek bentrok jadwal di ruangan & tanggal yang sama
-        $bentrok = Booking::where('id_ruangan', $validated['id_ruangan'])
-            ->where('tanggal', $validated['tanggal'])
-            ->whereIn('status_booking', ['menunggu', 'disetujui'])
-            ->where(function ($q) use ($validated) {
-                $q->whereBetween('jam_masuk', [$validated['jam_masuk'], $validated['jam_keluar']])
-                  ->orWhereBetween('jam_keluar', [$validated['jam_masuk'], $validated['jam_keluar']])
-                  ->orWhere(function ($q2) use ($validated) {
-                      $q2->where('jam_masuk', '<=', $validated['jam_masuk'])
-                         ->where('jam_keluar', '>=', $validated['jam_keluar']);
-                  });
-            })->exists();
-
+        $bentrok = $this->cekBentrok($validated, null);
         if ($bentrok) {
             return back()->withErrors(['jam_masuk' => 'Ruangan sudah dibooking pada rentang waktu tersebut.'])->withInput();
         }
 
-        // Cek kapasitas ruangan
         $ruangan = Ruangan::findOrFail($validated['id_ruangan']);
         if ($validated['total_peserta'] > $ruangan->kapasitas) {
             return back()->withErrors(['total_peserta' => "Total peserta melebihi kapasitas ruangan ({$ruangan->kapasitas} orang)."])->withInput();
         }
 
+        // status_booking: 0 = menunggu, 1 = disetujui, 2 = ditolak, 3 = selesai
         $validated['status_booking'] = 0;
 
         Booking::create($validated);
 
         return redirect()->route('admin.jadwal.hari-ini')->with('status', 'Booking rapat berhasil disimpan.');
     }
-    
-        /**
-     * Form Edit Ruang Rapat
-     */
+
     public function edit(Booking $booking)
     {
         $ruangans = Ruangan::with('fasilitas')->orderBy('nama_ruangan')->get();
@@ -78,45 +51,15 @@ class BookingController extends Controller
         return view('admin.booking.edit', compact('booking', 'ruangans', 'divisis', 'timeSlots'));
     }
 
-    /**
-     * Simpan perubahan booking
-     */
     public function update(Request $request, Booking $booking)
     {
-        $validated = $request->validate([
-            'nama_rapat' => 'required|string|max:255',
-            'tujuan_rapat' => 'nullable|string',
-            'tanggal' => 'required|date',
-            'jam_masuk' => 'required',
-            'jam_keluar' => 'required|after:jam_masuk',
-            'id_ruangan' => 'required|exists:ruangans,id',
-            'id_divisi' => 'required|exists:divisis,id',
-            'nama_penanggung_jawab' => 'required|string|max:255',
-            'nama_tamu' => 'nullable|string|max:255',
-            'total_peserta' => 'required|integer|min:1',
-            'catatan' => 'nullable|string',
-            'status_booking' => 'required|in:menunggu,disetujui,berlangsung,selesai,dibatalkan',
-        ]);
+        $validated = $this->validateBooking($request);
 
-        // Cek bentrok jadwal, kecualikan booking ini sendiri
-        $bentrok = Booking::where('id_ruangan', $validated['id_ruangan'])
-            ->where('tanggal', $validated['tanggal'])
-            ->where('id', '!=', $booking->id)
-            ->whereIn('status_booking', ['menunggu', 'disetujui'])
-            ->where(function ($q) use ($validated) {
-                $q->whereBetween('jam_masuk', [$validated['jam_masuk'], $validated['jam_keluar']])
-                  ->orWhereBetween('jam_keluar', [$validated['jam_masuk'], $validated['jam_keluar']])
-                  ->orWhere(function ($q2) use ($validated) {
-                      $q2->where('jam_masuk', '<=', $validated['jam_masuk'])
-                         ->where('jam_keluar', '>=', $validated['jam_keluar']);
-                  });
-            })->exists();
-
+        $bentrok = $this->cekBentrok($validated, $booking->id);
         if ($bentrok) {
             return back()->withErrors(['jam_masuk' => 'Ruangan sudah dibooking pada rentang waktu tersebut.'])->withInput();
         }
 
-        // Cek kapasitas ruangan
         $ruangan = Ruangan::findOrFail($validated['id_ruangan']);
         if ($validated['total_peserta'] > $ruangan->kapasitas) {
             return back()->withErrors(['total_peserta' => "Total peserta melebihi kapasitas ruangan ({$ruangan->kapasitas} orang)."])->withInput();
@@ -135,21 +78,18 @@ class BookingController extends Controller
         $request->validate([
             'id_ruangan' => 'required|exists:ruangans,id',
             'tanggal' => 'required|date',
-             'exclude_id' => 'nullable|exists:bookings,id',
         ]);
 
-          $query = Booking::where('id_ruangan', $request->id_ruangan)
+        $query = Booking::where('id_ruangan', $request->id_ruangan)
             ->where('tanggal', $request->tanggal)
-            ->whereIn('status_booking', ['menunggu', 'disetujui']);
- 
+            ->whereIn('status_booking', [0, 1]); // menunggu, disetujui
+
+        // Kalau sedang edit booking tertentu, exclude booking itu sendiri dari pengecekan
         if ($request->filled('exclude_id')) {
             $query->where('id', '!=', $request->exclude_id);
         }
-        
-        $bookings = Booking::where('id_ruangan', $request->id_ruangan)
-            ->where('tanggal', $request->tanggal)
-            ->whereIn('status_booking', ['menunggu', 'disetujui'])
-            ->get(['jam_masuk', 'jam_keluar']);
+
+        $bookings = $query->get(['jam_masuk', 'jam_keluar']);
 
         $terisi = [];
         foreach ($bookings as $b) {
@@ -162,6 +102,45 @@ class BookingController extends Controller
         }
 
         return response()->json(['terisi' => array_unique($terisi)]);
+    }
+
+    private function validateBooking(Request $request): array
+    {
+        return $request->validate([
+            'nama_rapat' => 'required|string|max:255',
+            'tujuan_rapat' => 'nullable|string',
+            'tanggal' => 'required|date',
+            'jam_masuk' => 'required',
+            'jam_keluar' => 'required|after:jam_masuk',
+            'id_ruangan' => 'required|exists:ruangans,id',
+            'id_divisi' => 'required|exists:divisis,id',
+            'nama_penanggung_jawab' => 'required|string|max:255',
+            'nama_tamu' => 'nullable|string|max:255',
+            'total_peserta' => 'required|integer|min:1',
+            'catatan' => 'nullable|string',
+            'status_booking' => 'sometimes|integer|in:0,1,2,3',
+        ]);
+    }
+
+    private function cekBentrok(array $data, ?int $excludeId): bool
+    {
+        $query = Booking::where('id_ruangan', $data['id_ruangan'])
+            ->where('tanggal', $data['tanggal'])
+            ->whereIn('status_booking', [0, 1]) // menunggu, disetujui
+            ->where(function ($q) use ($data) {
+                $q->whereBetween('jam_masuk', [$data['jam_masuk'], $data['jam_keluar']])
+                    ->orWhereBetween('jam_keluar', [$data['jam_masuk'], $data['jam_keluar']])
+                    ->orWhere(function ($q2) use ($data) {
+                        $q2->where('jam_masuk', '<=', $data['jam_masuk'])
+                            ->where('jam_keluar', '>=', $data['jam_keluar']);
+                    });
+            });
+
+        if ($excludeId) {
+            $query->where('id', '!=', $excludeId);
+        }
+
+        return $query->exists();
     }
 
     private function generateTimeSlots(): array
