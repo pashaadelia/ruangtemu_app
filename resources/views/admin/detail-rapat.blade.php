@@ -1,13 +1,12 @@
 <x-layouts.detail title="Detail Rapat - RuangTemu">
-    @php
-        $statusConfig = [
-            'menunggu'  => ['label' => 'Menunggu',   'class' => 'bg-white/20 text-white'],
-            'disetujui' => ['label' => 'Berlangsung', 'class' => 'bg-white/20 text-white'],
-            'selesai'   => ['label' => 'Selesai',    'class' => 'bg-white/20 text-white'],
-            'ditolak'   => ['label' => 'Dibatalkan', 'class' => 'bg-white/20 text-white'],
-        ];
-        $status = $statusConfig[$booking->status_booking] ?? $statusConfig['menunggu'];
-    @endphp
+@php
+    $statusConfig = [
+        1 => ['label' => 'Disetujui',  'class' => 'bg-white/20 text-white'],
+        2 => ['label' => 'Dibatalkan', 'class' => 'bg-white/20 text-white'],
+        3 => ['label' => 'Selesai',    'class' => 'bg-white/20 text-white'],
+    ];
+    $status = $statusConfig[$booking->status_booking] ?? $statusConfig[1];
+@endphp
 
     {{-- Header full-width dengan gradient --}}
     <div class="bg-gradient-to-r from-cyan-700 to-cyan-500 px-8 pt-8 pb-16">

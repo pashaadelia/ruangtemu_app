@@ -34,8 +34,8 @@ class BookingController extends Controller
             return back()->withErrors(['total_peserta' => "Total peserta melebihi kapasitas ruangan ({$ruangan->kapasitas} orang)."])->withInput();
         }
 
-        // status_booking: 0 = menunggu, 1 = disetujui, 2 = ditolak, 3 = selesai
-        $validated['status_booking'] = 0;
+        // status_booking: 1 = disetujui (default, auto-approve), 2 = dibatalkan, 3 = selesai
+        $validated['status_booking'] = 1;
 
         Booking::create($validated);
 
@@ -82,9 +82,8 @@ class BookingController extends Controller
 
         $query = Booking::where('id_ruangan', $request->id_ruangan)
             ->where('tanggal', $request->tanggal)
-            ->whereIn('status_booking', [0, 1]); // menunggu, disetujui
+            ->where('status_booking', 1); // hanya yang disetujui
 
-        // Kalau sedang edit booking tertentu, exclude booking itu sendiri dari pengecekan
         if ($request->filled('exclude_id')) {
             $query->where('id', '!=', $request->exclude_id);
         }
@@ -118,7 +117,7 @@ class BookingController extends Controller
             'nama_tamu' => 'nullable|string|max:255',
             'total_peserta' => 'required|integer|min:1',
             'catatan' => 'nullable|string',
-            'status_booking' => 'sometimes|integer|in:0,1,2,3',
+            'status_booking' => 'sometimes|integer|in:1,2,3',
         ]);
     }
 
@@ -126,14 +125,14 @@ class BookingController extends Controller
     {
         $query = Booking::where('id_ruangan', $data['id_ruangan'])
             ->where('tanggal', $data['tanggal'])
-            ->whereIn('status_booking', [0, 1]) // menunggu, disetujui
+            ->where('status_booking', 1) // hanya cek yang disetujui
             ->where(function ($q) use ($data) {
                 $q->whereBetween('jam_masuk', [$data['jam_masuk'], $data['jam_keluar']])
-                    ->orWhereBetween('jam_keluar', [$data['jam_masuk'], $data['jam_keluar']])
-                    ->orWhere(function ($q2) use ($data) {
-                        $q2->where('jam_masuk', '<=', $data['jam_masuk'])
-                            ->where('jam_keluar', '>=', $data['jam_keluar']);
-                    });
+                  ->orWhereBetween('jam_keluar', [$data['jam_masuk'], $data['jam_keluar']])
+                  ->orWhere(function ($q2) use ($data) {
+                      $q2->where('jam_masuk', '<=', $data['jam_masuk'])
+                         ->where('jam_keluar', '>=', $data['jam_keluar']);
+                  });
             });
 
         if ($excludeId) {
