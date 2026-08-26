@@ -2,12 +2,11 @@
 
 @php
     $statusConfig = [
-        0 => ['label' => 'Menunggu',    'class' => 'bg-cyan-100 text-cyan-700'],
-        1 => ['label' => 'Disetujui', 'class' => 'bg-blue-100 text-blue-700'],
-        2 => ['label' => 'Dibatalkan',  'class' => 'bg-red-100 text-red-700'],
-        3 => ['label' => 'Selesai',     'class' => 'bg-green-100 text-green-700'],
+        1 => ['label' => 'Disetujui',  'class' => 'bg-blue-100 text-blue-700'],
+        2 => ['label' => 'Dibatalkan', 'class' => 'bg-red-100 text-red-700'],
+        3 => ['label' => 'Selesai',    'class' => 'bg-green-100 text-green-700'],
     ];
-    $status = $statusConfig[$booking->status_booking] ?? $statusConfig[0];
+    $status = $statusConfig[$booking->status_booking] ?? $statusConfig[1];
 
     $detailRoute = request()->is('admin/*')
         ? route('admin.booking.show', $booking->id)

@@ -11,33 +11,27 @@ class RuanganSeeder extends Seeder
     {
         $ruangans = [
             [
-                'nama_ruangan' => 'Ruang Meeting A',
-                'status_ruangan' => 1,
-                'kapasitas' => 20,
-                'deskripsi_fasilitas' => 'AC, Proyektor, Whiteboard',
-            ],
-            [
                 'nama_ruangan' => 'R. Manglayang (Kaca)',
                 'status_ruangan' => 1,
-                'kapasitas' => 50,
+                'kapasitas' => 20,
                 'deskripsi_fasilitas' => 'AC, TV, WiFi',
             ],
             [
                 'nama_ruangan' => 'R. Patuha',
                 'status_ruangan' => 1,
-                'kapasitas' => 30,
+                'kapasitas' => 20,
                 'deskripsi_fasilitas' => 'Proyektor, WiFi, Meja dan Kursi',
             ],
             [
                 'nama_ruangan' => 'R. Burangrang',
                 'status_ruangan' => 0,
-                'kapasitas' => 25,
+                'kapasitas' => 20,
                 'deskripsi_fasilitas' => 'AC, Whiteboard',
             ],
             [
                 'nama_ruangan' => 'R. Tangkuban Perahu (Aula)',
                 'status_ruangan' => 1,
-                'kapasitas' => 50,
+                'kapasitas' => 20,
                 'deskripsi_fasilitas' => 'Proyektor, Video Conference, Whiteboard, WiFi',
             ],
             [
