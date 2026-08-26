@@ -236,69 +236,76 @@
     </div>
 
     <script>
-    function bookingForm() {
-        return {
-            tanggal: '{{old('tanggal')}}',
-            idRuangan: '{{old('id_ruangan')}}',
-            jamMasuk: '{{old('jam_masuk')}}',
-            jamKeluar: '{{old('jam_keluar')}}',
-            totalPeserta: {{old('total_peserta', 1)}},
-            terisiList: [],
-            kapasitasTerpilih: '-',
-            fasilitasTerpilih: '-',
+        function bookingForm() {
+            return {
+                tanggal: '{{ old('tanggal') }}',
+                idRuangan: '{{ old('id_ruangan') }}',
+                jamMasuk: '{{ old('jam_masuk') }}',
+                jamKeluar: '{{ old('jam_keluar') }}',
+                totalPeserta: {{ old('total_peserta', 1) }},
+                terisiList: [],
+                kapasitasTerpilih: '-',
+                fasilitasTerpilih: '-',
 
-            init() {
-                this.ruanganDipilih();
-                if (this.idRuangan && this.tanggal) {
-                    this.cekAvailability();
-                }
-            },
+                init() {
+                    this.ruanganDipilih();
+                    if (this.idRuangan && this.tanggal) {
+                        this.cekAvailability();
+                    }
+                },
 
-            ruanganDipilih() {
-                const select = document.querySelector('select[name="id_ruangan"]');
-                const opt = select.options[select.selectedIndex];
-                this.kapasitasTerpilih = opt?.dataset?.kapasitas || '-';
-                this.fasilitasTerpilih = opt?.dataset?.fasilitas || '-';
-            },
+                ruanganDipilih() {
+                    const select = document.querySelector('select[name="id_ruangan"]');
+                    const opt = select.options[select.selectedIndex];
+                    this.kapasitasTerpilih = opt?.dataset?.kapasitas || '-';
+                    this.fasilitasTerpilih = opt?.dataset?.fasilitas || '-';
+                },
 
-            isTerisi(slot) {
-                return this.terisiList.includes(slot);
-            },
+                isTerisi(slot) {
+                    return this.terisiList.includes(slot);
+                },
 
-            isDisabledMasuk(slot) {
-                if (this.isTerisi(slot)) return true;
-                if (this.jamKeluar && slot === this.jamKeluar) return true;
-                return false;
-            },
+                isDisabledMasuk(slot) {
+                    if (this.isTerisi(slot)) return true;
+                    if (this.jamKeluar && slot === this.jamKeluar) return true;
+                    return false;
+                },
 
-            isDisabledKeluar(slot) {
-                if (this.isTerisi(slot)) return true;
-                if (this.jamMasuk && slot === this.jamMasuk) return true;
-                return false;
-            },
+                isDisabledKeluar(slot) {
+                    if (this.isTerisi(slot)) return true;
+                    if (this.jamMasuk && slot === this.jamMasuk) return true;
+                    return false;
+                },
 
-            pilihJamMasuk(slot) {
-                if (this.isDisabledMasuk(slot)) return;
-                this.jamMasuk = slot;
-            },
+                pilihJamMasuk(slot) {
+                    if (this.isDisabledMasuk(slot)) return;
+                    this.jamMasuk = slot;
+                },
 
-            pilihJamKeluar(slot) {
-                if (this.isDisabledKeluar(slot)) return;
-                this.jamKeluar = slot;
-            },
+                pilihJamKeluar(slot) {
+                    if (this.isDisabledKeluar(slot)) return;
+                    this.jamKeluar = slot;
+                },
 
-            async cekAvailability() {
-                if (!this.idRuangan || !this.tanggal) return;
+                async cekAvailability() {
+                    if (!this.idRuangan || !this.tanggal) return;
 
-                try {
-                    const res = await fetch(`{{ route('admin.booking.availability') }}?id_ruangan=${this.idRuangan}&tanggal=${this.tanggal}`);
-                    const data = await res.json();
-                    this.terisiList = data.terisi || [];
-                } catch (e) {
-                    console.error('Gagal cek ketersediaan:', e);
+                    try {
+                        const res = await fetch(`{{ route('admin.booking.availability') }}?id_ruangan=${this.idRuangan}&tanggal=${this.tanggal}`);
+                        const data = await res.json();
+                        this.terisiList = data.terisi || [];
+
+                        if (this.jamMasuk && this.isTerisi(this.jamMasuk)) {
+                            this.jamMasuk = '';
+                        }
+                        if (this.jamKeluar && this.isTerisi(this.jamKeluar)) {
+                            this.jamKeluar = '';
+                        }
+                    } catch (e) {
+                        console.error('Gagal cek ketersediaan:', e);
+                    }
                 }
             }
         }
-    }
-</script>
+    </script>
 </x-layouts.detail>
