@@ -12,6 +12,7 @@ class RiwayatController extends Controller
     public function index(Request $request)
     {
         $query = Booking::with('ruangan')
+            ->whereIn('status_booking', [2, 3]) // 2 = dibatalkan, 3 = selesai
             ->orderByDesc('tanggal')
             ->orderByDesc('jam_masuk');
 

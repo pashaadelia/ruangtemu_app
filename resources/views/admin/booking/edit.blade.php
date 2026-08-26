@@ -328,6 +328,14 @@
                         });
                         const data = await res.json();
                         this.terisi = data.terisi ?? [];
+
+                        // Cek ulang: kalau jam yang sudah dipilih ternyata sekarang bentrok, reset
+                        if (this.selectedMasuk && this.isTerisi(this.selectedMasuk)) {
+                            this.selectedMasuk = '';
+                        }
+                        if (this.selectedKeluar && this.isTerisi(this.selectedKeluar)) {
+                            this.selectedKeluar = '';
+                        }
                     } catch (e) {
                         console.error('Gagal memuat ketersediaan jam:', e);
                     }
