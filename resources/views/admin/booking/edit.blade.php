@@ -4,13 +4,13 @@
             idRuangan: '{{ old('id_ruangan', $booking->id_ruangan) }}',
             tanggal: '{{ old('tanggal', \Carbon\Carbon::parse($booking->tanggal)->format('Y-m-d')) }}',
             excludeId: {{ $booking->id }},
-            selectedMasuk: '{{ old('jam_masuk', \Carbon\Carbon::parse($booking->jam_masuk)->format('H:i')) }}',
-            selectedKeluar: '{{ old('jam_keluar', \Carbon\Carbon::parse($booking->jam_keluar)->format('H:i')) }}',
+            jamMulai: '{{ old('jam_masuk', \Carbon\Carbon::parse($booking->jam_masuk)->format('H:i')) }}',
+            jamSelesai: '{{ old('jam_keluar', \Carbon\Carbon::parse($booking->jam_keluar)->format('H:i')) }}',
             timeSlots: {{ json_encode($timeSlots) }},
             totalPeserta: {{ (int) old('total_peserta', $booking->total_peserta) }},
             availabilityUrl: '{{ route('admin.booking.availability') }}',
         })"
-        x-init="loadAvailability()"
+        x-init="init()"
         class="min-h-screen bg-gradient-to-b from-sky-100 via-slate-100 to-slate-100">
 
         {{-- Header --}}
@@ -64,72 +64,20 @@
                         class="w-full resize-none rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-slate-800 outline-none transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100">{{ old('tujuan_rapat', $booking->tujuan_rapat) }}</textarea>
                 </div>
 
-                <div class="mb-6">
-                    <label for="tanggal" class="mb-2 block text-sm font-medium text-slate-700">
-                        Date <span class="text-rose-500">*</span>
-                    </label>
-                    <div class="max-w-xs">
-                        <input type="date" id="tanggal" name="tanggal" x-model="tanggal"
-                            @change="loadAvailability()" required
-                            class="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-slate-800 outline-none transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100">
-                    </div>
-                </div>
-
-                {{-- Waktu Masuk --}}
-                <div class="mb-2">
-                    <label class="mb-2 block text-sm font-medium text-slate-700">
-                        Waktu Masuk <span class="text-rose-500">*</span>
-                    </label>
-                    <div class="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
-                        <template x-for="slot in timeSlots" :key="'masuk-' + slot">
-                            <button type="button" :disabled="isDisabledMasuk(slot)"
-                                @click="pilihMasuk(slot)"
-                                :class="slotClassesMasuk(slot)"
-                                class="shrink-0 rounded-lg border px-4 py-2 text-sm font-medium transition"
-                                x-text="slot"></button>
-                        </template>
-                    </div>
-                    <input type="hidden" name="jam_masuk" :value="selectedMasuk">
-                </div>
-                <p class="mb-6 flex items-center gap-4 text-xs text-slate-500">
-                    <span class="flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-cyan-700"></span> Terpilih</span>
-                    <span class="flex items-center gap-1.5"><span class="h-2 w-2 rounded-full border border-slate-400"></span> Tersedia</span>
-                    <span class="flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-slate-300"></span> Terisi</span>
-                </p>
-
-                {{-- Waktu Keluar --}}
-                <div class="mb-2">
-                    <label class="mb-2 block text-sm font-medium text-slate-700">
-                        Waktu Keluar <span class="text-rose-500">*</span>
-                    </label>
-                    <div class="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
-                        <template x-for="slot in timeSlots" :key="'keluar-' + slot">
-                            <button type="button" :disabled="isDisabledKeluar(slot)"
-                                @click="pilihKeluar(slot)"
-                                :class="slotClassesKeluar(slot)"
-                                class="shrink-0 rounded-lg border px-4 py-2 text-sm font-medium transition"
-                                x-text="slot"></button>
-                        </template>
-                    </div>
-                    <input type="hidden" name="jam_keluar" :value="selectedKeluar">
-                </div>
-                <p class="mb-6 flex items-center gap-4 text-xs text-slate-500">
-                    <span class="flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-cyan-700"></span> Terpilih</span>
-                    <span class="flex items-center gap-1.5"><span class="h-2 w-2 rounded-full border border-slate-400"></span> Tersedia</span>
-                    <span class="flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-slate-300"></span> Terisi</span>
-                </p>
-
                 {{-- Ruangan / Divisi --}}
-                <div class="mb-6 grid grid-cols-1 gap-4 rounded-xl border border-slate-200 p-4 sm:grid-cols-2">
+                <div class="bg-gray-50 rounded-lg p-5 grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div>
                         <label for="id_ruangan" class="mb-2 block text-sm font-medium text-slate-700">
                             Pilih Ruangan <span class="text-rose-500">*</span>
                         </label>
                         <select id="id_ruangan" name="id_ruangan" x-model="idRuangan"
-                            @change="loadAvailability()" required
+                            @change="onRuanganChange()" required
                             class="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-slate-800 outline-none transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100">
                             @foreach ($ruangans as $ruangan)
-                            <option value="{{ $ruangan->id }}" @selected(old('id_ruangan', $booking->id_ruangan) == $ruangan->id)>
+                            <option value="{{ $ruangan->id }}"
+                                data-kapasitas="{{ $ruangan->kapasitas }}"
+                                data-fasilitas="{{ $ruangan->fasilitas->pluck('nama_fasilitas')->join(', ') }}"
+                                @selected(old('id_ruangan', $booking->id_ruangan) == $ruangan->id)>
                                 {{ $ruangan->nama_ruangan }}
                             </option>
                             @endforeach
@@ -150,46 +98,75 @@
                     </div>
                 </div>
 
-                {{-- Status (SATU select saja) --}}
-                <div class="mb-6 rounded-xl border border-slate-200 p-4">
-                    <label for="status_booking" class="mb-2 block text-sm font-medium text-slate-700">
-                        Status <span class="text-rose-500">*</span>
-                    </label>
-                    @php
-                    $statusOptions = [
-                    1 => 'Disetujui',
-                    2 => 'Dibatalkan',
-                    3 => 'Selesai',
-                    ];
-                    @endphp
-                    <select id="status_booking" name="status_booking" required
-                        class="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-slate-800 outline-none transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100">
-                        @foreach ($statusOptions as $value => $label)
-                        <option value="{{ $value }}" @selected((int) old('status_booking', $booking->status_booking) === $value)>
-                            {{ $label }}
-                        </option>
-                        @endforeach
-                    </select>
-                </div>
-
-                {{-- Kapasitas Ruangan info --}}
-                <div class="flex items-start gap-3 rounded-xl bg-sky-50 p-4">
+                {{-- Info Kapasitas --}}
+                <div class="mb-6 flex items-start gap-3 rounded-xl bg-sky-50 p-4">
                     <svg xmlns="http://www.w3.org/2000/svg" class="mt-0.5 h-5 w-5 shrink-0 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M5 21V7l7-4 7 4v14M9 9h1m-1 4h1m4-4h1m-1 4h1M9 21v-4h6v4" />
                     </svg>
-                    <div>
-                        <p class="font-medium text-slate-700">Kapasitas Ruangan</p>
-                        <p class="text-sm text-slate-500">
-                            @foreach ($ruangans as $ruangan)
-                            <template x-if="idRuangan == '{{ $ruangan->id }}'">
-                                <span>
-                                    Kapasitas: {{ $ruangan->kapasitas }} orang.
-                                    Fasilitas: {{ $ruangan->fasilitas->pluck('nama_fasilitas')->join(', ') ?: '-' }}.
-                                </span>
-                            </template>
-                            @endforeach
-                        </p>
+                    <div class="text-sm text-slate-600">
+                        <p class="mb-0.5 font-medium text-slate-700">Kapasitas Ruangan</p>
+                        <p>Selected room supports: <span x-text="fasilitasTerpilih"></span>. Max capacity <span x-text="kapasitasTerpilih"></span> orang.</p>
                     </div>
+                </div>
+
+                <div class="mb-6">
+                    <label for="tanggal" class="mb-2 block text-sm font-medium text-slate-700">
+                        Date <span class="text-rose-500">*</span>
+                    </label>
+                    <div class="max-w-xs">
+                        <input type="date" id="tanggal" name="tanggal" x-model="tanggal"
+                            @change="onTanggalChange()" required
+                            class="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-slate-800 outline-none transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100">
+                    </div>
+                </div>
+
+                {{-- Waktu Penggunaan Ruangan (satu baris, klik mulai -> klik selesai, sama seperti Create) --}}
+                <div class="mb-6">
+                    <label class="mb-2 block text-sm font-medium text-slate-700">
+                        Waktu Penggunaan Ruangan <span class="text-rose-500">*</span>
+                    </label>
+                    <p class="mb-2 text-xs text-slate-400">
+                        Klik jam mulai, lalu klik jam selesai. Rentang di antaranya otomatis terpilih.
+                    </p>
+                    <div class="flex flex-wrap gap-2">
+                        <template x-for="slot in timeSlots" :key="slot">
+                            <button type="button"
+                                @click="pilihSlot(slot)"
+                                :disabled="isTerisi(slot)"
+                                :class="slotClasses(slot)"
+                                class="rounded-lg border px-3 py-2 text-sm font-medium transition"
+                                x-text="slot"></button>
+                        </template>
+                    </div>
+                    <div class="mt-2 flex items-center gap-4 text-xs text-slate-500">
+                        <span class="flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-full bg-cyan-700"></span> Terpilih</span>
+                        <span class="flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-full border border-slate-400"></span> Tersedia</span>
+                        <span class="flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-full bg-slate-300"></span> Terisi</span>
+                    </div>
+                    <p x-show="jamMulai && jamSelesai" x-cloak class="mt-2 text-sm text-slate-600">
+                        Terpilih: <span class="font-semibold" x-text="jamMulai"></span> - <span class="font-semibold" x-text="jamSelesai"></span>
+                    </p>
+                    <input type="hidden" name="jam_masuk" x-model="jamMulai">
+                    <input type="hidden" name="jam_keluar" x-model="jamSelesai">
+                </div>
+
+                {{-- Status --}}
+                <div class="rounded-xl border border-slate-200 p-4">
+                    <label for="status_booking" class="mb-2 block text-sm font-medium text-slate-700">
+                        Status
+                    </label>
+                    <select id="status_booking" name="status_booking"
+                        class="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-slate-800 outline-none transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100">
+                        <option value="" @selected(is_null(old('status_booking', $booking->status_booking)))>
+                            Tidak Dibatalkan (otomatis sesuai jadwal)
+                        </option>
+                        <option value="1" @selected((int) old('status_booking', $booking->status_booking) === 1)>
+                            Dibatalkan
+                        </option>
+                    </select>
+                    <p class="mt-1.5 text-xs text-slate-400">
+                        Status "Sedang Berlangsung" dan "Selesai" muncul otomatis sesuai jam rapat. Pilih "Dibatalkan" hanya kalau rapat memang dibatalkan.
+                    </p>
                 </div>
             </section>
 
@@ -260,58 +237,95 @@
         function editRuangRapat(config) {
             return {
                 ...config,
-                terisi: [],
+                terisiList: [],
+                kapasitasTerpilih: '-',
+                fasilitasTerpilih: '-',
 
-                // Cek apakah slot sudah terisi booking lain
+                init() {
+                    this.ruanganDipilih();
+                    if (this.idRuangan && this.tanggal) {
+                        this.cekAvailability();
+                    }
+                },
+
+                ruanganDipilih() {
+                    const select = document.querySelector('select[name="id_ruangan"]');
+                    const opt = select?.options[select.selectedIndex];
+                    this.kapasitasTerpilih = opt?.dataset?.kapasitas || '-';
+                    this.fasilitasTerpilih = opt?.dataset?.fasilitas || '-';
+                },
+
+                resetSelection() {
+                    this.jamMulai = '';
+                    this.jamSelesai = '';
+                    this.terisiList = [];
+                },
+
+                onRuanganChange() {
+                    this.ruanganDipilih();
+                    this.resetSelection();
+                    this.cekAvailability();
+                },
+
+                onTanggalChange() {
+                    this.resetSelection();
+                    this.cekAvailability();
+                },
+
                 isTerisi(slot) {
-                    return this.terisi.includes(slot);
+                    return this.terisiList.includes(slot);
                 },
 
-                // Waktu Masuk: disable kalau terisi ATAU sama persis dengan jam keluar yang sudah dipilih
-                isDisabledMasuk(slot) {
-                    if (this.isTerisi(slot)) return true;
-                    if (this.selectedKeluar && slot === this.selectedKeluar) return true;
+                inRange(slot) {
+                    if (!this.jamMulai) return false;
+                    if (!this.jamSelesai) return slot === this.jamMulai;
+                    return slot >= this.jamMulai && slot <= this.jamSelesai;
+                },
+
+                rangeHasConflict(start, end) {
+                    const startIdx = this.timeSlots.indexOf(start);
+                    const endIdx = this.timeSlots.indexOf(end);
+                    for (let i = startIdx; i < endIdx; i++) {
+                        if (this.terisiList.includes(this.timeSlots[i])) return true;
+                    }
                     return false;
                 },
 
-                // Waktu Keluar: disable kalau terisi ATAU sama persis dengan jam masuk yang sudah dipilih
-                isDisabledKeluar(slot) {
-                    if (this.isTerisi(slot)) return true;
-                    if (this.selectedMasuk && slot === this.selectedMasuk) return true;
-                    return false;
-                },
+                pilihSlot(slot) {
+                    if (this.isTerisi(slot)) return;
 
-                pilihMasuk(slot) {
-                    if (this.isDisabledMasuk(slot)) return;
-                    this.selectedMasuk = slot;
-                },
-
-                pilihKeluar(slot) {
-                    if (this.isDisabledKeluar(slot)) return;
-                    this.selectedKeluar = slot;
-                },
-
-                slotClassesMasuk(slot) {
-                    if (this.isDisabledMasuk(slot)) {
-                        return 'cursor-not-allowed border-slate-100 bg-slate-100 text-slate-300';
+                    if (!this.jamMulai || (this.jamMulai && this.jamSelesai)) {
+                        this.jamMulai = slot;
+                        this.jamSelesai = '';
+                        return;
                     }
-                    if (slot === this.selectedMasuk) {
-                        return 'border-cyan-700 bg-cyan-700 text-white';
+
+                    if (slot <= this.jamMulai) {
+                        this.jamMulai = slot;
+                        this.jamSelesai = '';
+                        return;
                     }
-                    return 'border-slate-200 bg-white text-slate-700 hover:border-cyan-400 hover:bg-cyan-50';
+
+                    if (this.rangeHasConflict(this.jamMulai, slot)) {
+                        this.jamMulai = slot;
+                        this.jamSelesai = '';
+                        return;
+                    }
+
+                    this.jamSelesai = slot;
                 },
 
-                slotClassesKeluar(slot) {
-                    if (this.isDisabledKeluar(slot)) {
-                        return 'cursor-not-allowed border-slate-100 bg-slate-100 text-slate-300';
+                slotClasses(slot) {
+                    if (this.isTerisi(slot)) {
+                        return 'bg-slate-100 border-slate-100 text-slate-300 cursor-not-allowed';
                     }
-                    if (slot === this.selectedKeluar) {
-                        return 'border-cyan-700 bg-cyan-700 text-white';
+                    if (this.inRange(slot)) {
+                        return 'bg-cyan-700 border-cyan-700 text-white';
                     }
-                    return 'border-slate-200 bg-white text-slate-700 hover:border-cyan-400 hover:bg-cyan-50';
+                    return 'bg-white border-slate-300 text-slate-700 hover:border-cyan-400 hover:bg-cyan-50';
                 },
 
-                async loadAvailability() {
+                async cekAvailability() {
                     if (!this.idRuangan || !this.tanggal) return;
 
                     const params = new URLSearchParams({
@@ -322,19 +336,17 @@
 
                     try {
                         const res = await fetch(`${this.availabilityUrl}?${params.toString()}`, {
-                            headers: {
-                                'Accept': 'application/json'
-                            },
+                            headers: { 'Accept': 'application/json' },
                         });
                         const data = await res.json();
-                        this.terisi = data.terisi ?? [];
+                        this.terisiList = data.terisi ?? [];
 
-                        // Cek ulang: kalau jam yang sudah dipilih ternyata sekarang bentrok, reset
-                        if (this.selectedMasuk && this.isTerisi(this.selectedMasuk)) {
-                            this.selectedMasuk = '';
-                        }
-                        if (this.selectedKeluar && this.isTerisi(this.selectedKeluar)) {
-                            this.selectedKeluar = '';
+                        // Kalau jam yang sudah dipilih ternyata sekarang bentrok, reset
+                        if (this.jamMulai && this.isTerisi(this.jamMulai)) {
+                            this.jamMulai = '';
+                            this.jamSelesai = '';
+                        } else if (this.jamSelesai && this.rangeHasConflict(this.jamMulai, this.jamSelesai)) {
+                            this.jamSelesai = '';
                         }
                     } catch (e) {
                         console.error('Gagal memuat ketersediaan jam:', e);

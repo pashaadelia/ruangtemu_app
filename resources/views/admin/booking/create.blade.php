@@ -10,7 +10,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                     </svg>
                 </a>
-                <h1 class="text-4xl font-bold text-white">Tambah Ruangan</h1>
+                <h1 class="text-4xl font-bold text-white">Tambah Booking</h1>
             </div>
         </div>
 
@@ -53,80 +53,14 @@
                                 class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 resize-none">{{ old('tujuan_rapat') }}</textarea>
                         </div>
 
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1.5">
-                                Date <span class="text-red-500">*</span>
-                            </label>
-                            <input type="date" name="tanggal" x-model="tanggal" @change="cekAvailability()" required
-                                value="{{ old('tanggal') }}"
-                                class="w-full max-w-xs border border-gray-300 rounded-lg px-4 py-2.5 text-gray-800 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500">
-                        </div>
-
-                        {{-- Waktu Masuk --}}
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Waktu Masuk <span class="text-red-500">*</span>
-                            </label>
-                            <div class="flex flex-wrap gap-2">
-                                @foreach ($timeSlots as $slot)
-                                <button type="button"
-                                    @click="pilihJamMasuk('{{ $slot }}')"
-                                    :disabled="isDisabledMasuk('{{ $slot }}')"
-                                    :class="{
-                        'bg-cyan-600 border-cyan-600 text-white': jamMasuk === '{{ $slot }}',
-                        'bg-gray-100 border-gray-200 text-gray-300 cursor-not-allowed': isDisabledMasuk('{{ $slot }}'),
-                        'bg-white border-gray-300 text-gray-700 hover:border-cyan-400': jamMasuk !== '{{ $slot }}' && !isDisabledMasuk('{{ $slot }}')
-                    }"
-                                    class="px-3 py-2 rounded-lg border text-sm font-medium transition">
-                                    {{ $slot }}
-                                </button>
-                                @endforeach
-                            </div>
-                            <div class="flex items-center gap-4 mt-2 text-xs text-gray-500">
-                                <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-cyan-600"></span> Terpilih</span>
-                                <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full border border-gray-300"></span> Tersedia</span>
-                                <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-gray-300"></span> Terisi</span>
-                            </div>
-                            <input type="hidden" name="jam_masuk" x-model="jamMasuk">
-                        </div>
-
-                        {{-- Waktu Keluar --}}
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Waktu Keluar <span class="text-red-500">*</span>
-                            </label>
-                            <div class="flex flex-wrap gap-2">
-                                @foreach ($timeSlots as $slot)
-                                <button type="button"
-                                    @click="pilihJamKeluar('{{ $slot }}')"
-                                    :disabled="isDisabledKeluar('{{ $slot }}')"
-                                    :class="{
-                        'bg-cyan-600 border-cyan-600 text-white': jamKeluar === '{{ $slot }}',
-                        'bg-gray-100 border-gray-200 text-gray-300 cursor-not-allowed': isDisabledKeluar('{{ $slot }}'),
-                        'bg-white border-gray-300 text-gray-700 hover:border-cyan-400': jamKeluar !== '{{ $slot }}' && !isDisabledKeluar('{{ $slot }}')
-                    }"
-                                    class="px-3 py-2 rounded-lg border text-sm font-medium transition">
-                                    {{ $slot }}
-                                </button>
-                                @endforeach
-                            </div>
-                            <div class="flex items-center gap-4 mt-2 text-xs text-gray-500">
-                                <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-cyan-600"></span> Terpilih</span>
-                                <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full border border-gray-300"></span> Tersedia</span>
-                                <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-gray-300"></span> Terisi</span>
-                            </div>
-                            <input type="hidden" name="jam_keluar" x-model="jamKeluar">
-                        </div>
-
                         {{-- Pilih Ruangan & Unit/Divisi --}}
-                        <div class="bg-gray-50 rounded-lg p-5 grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div class="mb-6 grid grid-cols-1 gap-4 rounded-xl border border-slate-200 p-4 sm:grid-cols-2">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                                <label class="mb-2 block text-sm font-medium text-slate-700">
                                     Pilih Ruangan <span class="text-red-500">*</span>
                                 </label>
-                                <select name="id_ruangan" x-model="idRuangan" @change="ruanganDipilih(); cekAvailability()" required
-                                    class="w-full border border-gray-300 rounded-lg px-4 py-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                                <select name="id_ruangan" x-model="idRuangan" @change="onRuanganChange()" required
+                                    class="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-slate-800 outline-none transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100">
                                     <option value="">Pilih Ruangan</option>
                                     @foreach ($ruangans as $r)
                                     <option value="{{ $r->id }}"
@@ -155,15 +89,43 @@
                             </div>
                         </div>
 
-                        {{-- Info Kapasitas --}}
-                        <div x-show="idRuangan" x-cloak class="bg-cyan-50/60 rounded-lg p-4 flex gap-3">
-                            <svg class="w-5 h-5 text-cyan-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4" />
-                            </svg>
-                            <div class="text-sm text-gray-600">
-                                <p class="font-semibold text-gray-900 mb-0.5">Kapasitas Ruangan</p>
-                                <p>Selected room supports: <span x-text="fasilitasTerpilih"></span>. Max capacity <span x-text="kapasitasTerpilih"></span> orang.</p>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                                Date <span class="text-red-500">*</span>
+                            </label>
+                            <input type="date" name="tanggal" x-model="tanggal" @change="onTanggalChange()" required
+                                value="{{ old('tanggal') }}"
+                                class="w-full max-w-xs border border-gray-300 rounded-lg px-4 py-2.5 text-gray-800 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500">
+                        </div>
+
+                        {{-- Waktu Penggunaan Ruangan --}}
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Waktu Penggunaan Ruangan <span class="text-red-500">*</span>
+                            </label>
+                            <p class="text-xs text-gray-400 mb-2">
+                                Klik jam mulai, lalu klik jam selesai. Rentang di antaranya otomatis terpilih.
+                            </p>
+                            <div class="flex flex-wrap gap-2">
+                                <template x-for="slot in timeSlots" :key="slot">
+                                    <button type="button"
+                                        @click="pilihSlot(slot)"
+                                        :disabled="isTerisi(slot)"
+                                        :class="slotClasses(slot)"
+                                        class="px-3 py-2 rounded-lg border text-sm font-medium transition"
+                                        x-text="slot"></button>
+                                </template>
                             </div>
+                            <div class="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                                <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-cyan-600"></span> Terpilih</span>
+                                <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full border border-gray-300"></span> Tersedia</span>
+                                <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-gray-300"></span> Terisi</span>
+                            </div>
+                            <p x-show="jamMulai && jamSelesai" x-cloak class="text-sm text-gray-600 mt-2">
+                                Terpilih: <span class="font-semibold" x-text="jamMulai"></span> - <span class="font-semibold" x-text="jamSelesai"></span>
+                            </p>
+                            <input type="hidden" name="jam_masuk" x-model="jamMulai">
+                            <input type="hidden" name="jam_keluar" x-model="jamSelesai">
                         </div>
                     </div>
                 </div>
@@ -240,12 +202,13 @@
             return {
                 tanggal: '{{ old('tanggal') }}',
                 idRuangan: '{{ old('id_ruangan') }}',
-                jamMasuk: '{{ old('jam_masuk') }}',
-                jamKeluar: '{{ old('jam_keluar') }}',
+                jamMulai: '{{ old('jam_masuk') }}',
+                jamSelesai: '{{ old('jam_keluar') }}',
                 totalPeserta: {{ old('total_peserta', 1) }},
                 terisiList: [],
                 kapasitasTerpilih: '-',
                 fasilitasTerpilih: '-',
+                timeSlots: @json($timeSlots),
 
                 init() {
                     this.ruanganDipilih();
@@ -261,30 +224,77 @@
                     this.fasilitasTerpilih = opt?.dataset?.fasilitas || '-';
                 },
 
+                resetSelection() {
+                    this.jamMulai = '';
+                    this.jamSelesai = '';
+                    this.terisiList = [];
+                },
+
+                onRuanganChange() {
+                    this.ruanganDipilih();
+                    this.resetSelection();
+                    this.cekAvailability();
+                },
+
+                onTanggalChange() {
+                    this.resetSelection();
+                    this.cekAvailability();
+                },
+
                 isTerisi(slot) {
                     return this.terisiList.includes(slot);
                 },
 
-                isDisabledMasuk(slot) {
-                    if (this.isTerisi(slot)) return true;
-                    if (this.jamKeluar && slot === this.jamKeluar) return true;
+                inRange(slot) {
+                    if (!this.jamMulai) return false;
+                    if (!this.jamSelesai) return slot === this.jamMulai;
+                    return slot >= this.jamMulai && slot <= this.jamSelesai;
+                },
+
+                rangeHasConflict(start, end) {
+                    const startIdx = this.timeSlots.indexOf(start);
+                    const endIdx = this.timeSlots.indexOf(end);
+                    for (let i = startIdx; i < endIdx; i++) {
+                        if (this.terisiList.includes(this.timeSlots[i])) return true;
+                    }
                     return false;
                 },
 
-                isDisabledKeluar(slot) {
-                    if (this.isTerisi(slot)) return true;
-                    if (this.jamMasuk && slot === this.jamMasuk) return true;
-                    return false;
+                pilihSlot(slot) {
+                    if (this.isTerisi(slot)) return;
+
+                    // Belum ada jam mulai, atau seleksi sebelumnya sudah lengkap -> mulai baru
+                    if (!this.jamMulai || (this.jamMulai && this.jamSelesai)) {
+                        this.jamMulai = slot;
+                        this.jamSelesai = '';
+                        return;
+                    }
+
+                    // Klik jam yang sama/lebih awal dari jam mulai -> reset mulai dari sini
+                    if (slot <= this.jamMulai) {
+                        this.jamMulai = slot;
+                        this.jamSelesai = '';
+                        return;
+                    }
+
+                    // Ada slot terisi di tengah rentang -> tidak boleh, mulai ulang dari klik ini
+                    if (this.rangeHasConflict(this.jamMulai, slot)) {
+                        this.jamMulai = slot;
+                        this.jamSelesai = '';
+                        return;
+                    }
+
+                    this.jamSelesai = slot;
                 },
 
-                pilihJamMasuk(slot) {
-                    if (this.isDisabledMasuk(slot)) return;
-                    this.jamMasuk = slot;
-                },
-
-                pilihJamKeluar(slot) {
-                    if (this.isDisabledKeluar(slot)) return;
-                    this.jamKeluar = slot;
+                slotClasses(slot) {
+                    if (this.isTerisi(slot)) {
+                        return 'bg-gray-100 border-gray-200 text-gray-300 cursor-not-allowed';
+                    }
+                    if (this.inRange(slot)) {
+                        return 'bg-cyan-600 border-cyan-600 text-white';
+                    }
+                    return 'bg-white border-gray-300 text-gray-700 hover:border-cyan-400';
                 },
 
                 async cekAvailability() {
@@ -294,13 +304,6 @@
                         const res = await fetch(`{{ route('admin.booking.availability') }}?id_ruangan=${this.idRuangan}&tanggal=${this.tanggal}`);
                         const data = await res.json();
                         this.terisiList = data.terisi || [];
-
-                        if (this.jamMasuk && this.isTerisi(this.jamMasuk)) {
-                            this.jamMasuk = '';
-                        }
-                        if (this.jamKeluar && this.isTerisi(this.jamKeluar)) {
-                            this.jamKeluar = '';
-                        }
                     } catch (e) {
                         console.error('Gagal cek ketersediaan:', e);
                     }

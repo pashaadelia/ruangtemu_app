@@ -19,30 +19,29 @@ class AuthController extends Controller
     }
 
     public function login(Request $request)
-    {
-        $request->validate([
-            'username' => 'required|string',
-            'password' => 'required|string',
-            'role' => 'required|in:admin,user',
-        ]);
+{
+    $request->validate([
+        'username' => 'required|string',
+        'password' => 'required|string',
+        'role' => 'required|in:admin,user',
+    ]);
 
-        $user = User::where('username', $request->username)->first();
+    $user = User::where('username', $request->username)->first();
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            throw ValidationException::withMessages(['username' => 'Username atau password salah.']);
-        }
-
-        if ($user->role !== $request->role) {
-            throw ValidationException::withMessages(['username' => 'Akun ini tidak terdaftar sebagai ' . $request->role . '.']);
-        }
-
-        Auth::login($user, $request->boolean('remember'));
-        $request->session()->regenerate();
-
-        return $user->role === 'admin'
-            ? redirect()->route('admin.dashboard')
-            : redirect()->route('user.dashboard');
+    if (!$user || !Hash::check($request->password, $user->password)) {
+        throw ValidationException::withMessages(['username' => 'Username atau password salah.']);
     }
+
+    if ($user->role !== $request->role) {
+        throw ValidationException::withMessages(['username' => 'Akun ini tidak terdaftar sebagai ' . $request->role . '.']);
+    }
+
+    Auth::login($user);
+
+    return $user->role === 'admin'
+        ? redirect()->route('admin.dashboard')
+        : redirect()->route('user.dashboard');
+}
 
     public function showRegisterForm()
     {

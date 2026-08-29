@@ -34,8 +34,9 @@ class BookingController extends Controller
             return back()->withErrors(['total_peserta' => "Total peserta melebihi kapasitas ruangan ({$ruangan->kapasitas} orang)."])->withInput();
         }
 
-        // status_booking: 1 = disetujui (default, auto-approve), 2 = dibatalkan, 3 = selesai
-        $validated['status_booking'] = 1;
+        // status_booking sengaja TIDAK diisi (null) saat pertama dibuat.
+        // Statusnya nanti otomatis dihitung dari jam rapat (lihat Booking::getComputedStatusAttribute).
+        // Admin hanya bisa mengubahnya jadi "Dibatalkan" lewat halaman Edit.
 
         Booking::create($validated);
 
@@ -71,7 +72,9 @@ class BookingController extends Controller
     }
 
     /**
-     * Endpoint AJAX: cek jam yang sudah terisi untuk ruangan & tanggal tertentu
+     * Endpoint AJAX: cek jam yang sudah terisi untuk ruangan & tanggal tertentu.
+     * Hanya booking yang MASIH AKTIF (belum dibatalkan) yang dianggap menutup slot.
+     * Booking yang statusnya "Dibatalkan" melepas slot jamnya agar bisa dibooking ulang.
      */
     public function availability(Request $request)
     {
@@ -82,7 +85,7 @@ class BookingController extends Controller
 
         $query = Booking::where('id_ruangan', $request->id_ruangan)
             ->where('tanggal', $request->tanggal)
-            ->where('status_booking', 1); // hanya yang disetujui
+            ->whereNull('status_booking');
 
         if ($request->filled('exclude_id')) {
             $query->where('id', '!=', $request->exclude_id);
@@ -117,22 +120,26 @@ class BookingController extends Controller
             'nama_tamu' => 'nullable|string|max:255',
             'total_peserta' => 'required|integer|min:1',
             'catatan' => 'nullable|string',
-            'status_booking' => 'sometimes|integer|in:1,2,3',
+            'status_booking' => 'nullable|integer|in:1',
         ]);
     }
 
+    /**
+     * Cek bentrok jadwal. Hanya booking aktif (belum dibatalkan) yang
+     * dianggap menutup slot jam.
+     */
     private function cekBentrok(array $data, ?int $excludeId): bool
     {
         $query = Booking::where('id_ruangan', $data['id_ruangan'])
             ->where('tanggal', $data['tanggal'])
-            ->where('status_booking', 1) // hanya cek yang disetujui
+            ->whereNull('status_booking')
             ->where(function ($q) use ($data) {
                 $q->whereBetween('jam_masuk', [$data['jam_masuk'], $data['jam_keluar']])
-                  ->orWhereBetween('jam_keluar', [$data['jam_masuk'], $data['jam_keluar']])
-                  ->orWhere(function ($q2) use ($data) {
-                      $q2->where('jam_masuk', '<=', $data['jam_masuk'])
-                         ->where('jam_keluar', '>=', $data['jam_keluar']);
-                  });
+                    ->orWhereBetween('jam_keluar', [$data['jam_masuk'], $data['jam_keluar']])
+                    ->orWhere(function ($q2) use ($data) {
+                        $q2->where('jam_masuk', '<=', $data['jam_masuk'])
+                            ->where('jam_keluar', '>=', $data['jam_keluar']);
+                    });
             });
 
         if ($excludeId) {

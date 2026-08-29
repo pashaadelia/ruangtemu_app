@@ -1,13 +1,19 @@
 <x-layouts.app :title="'Riwayat - RuangTemu'">
-    <div x-data="{ search: '{{ $search }}', ruangan: '{{ $ruanganFilter }}' }">
+    <div x-data="{
+        search: '{{ $search }}',
+        ruangan: '{{ $ruanganFilter }}',
+        tanggal: '{{ $tanggalFilter ?? '' }}',
+        bulan: '{{ $bulanFilter ?? '' }}',
+        tahun: '{{ $tahunFilter ?? '' }}'
+    }">
 
-        <div class="flex items-start justify-between gap-6 mb-8">
+        <div class="flex items-start justify-between gap-6 mb-8 flex-wrap">
             <div>
                 <h1 class="text-3xl font-bold text-gray-900">Riwayat</h1>
                 <p class="text-gray-500 mt-1">Kelola dan tinjau semua jadwal penggunaan ruangan.</p>
             </div>
 
-            <form action="{{ route('admin.riwayat') }}" method="GET" class="flex gap-3 shrink-0">
+            <form action="{{ route('admin.riwayat') }}" method="GET" class="flex gap-3 shrink-0 flex-wrap">
                 <div class="relative">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
@@ -15,7 +21,7 @@
                     <input type="text" name="search" x-model="search"
                            x-on:input.debounce.500ms="$el.form.submit()"
                            placeholder="Cari ruangan atau meeting..."
-                           class="w-72 pl-9 pr-4 py-2.5 text-sm rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-cyan-600 focus:border-transparent">
+                           class="w-64 pl-9 pr-4 py-2.5 text-sm rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-cyan-600 focus:border-transparent">
                 </div>
 
                 <select name="ruangan" x-model="ruangan" onchange="this.form.submit()"
@@ -27,6 +33,37 @@
                         </option>
                     @endforeach
                 </select>
+
+                {{-- Filter Tanggal Spesifik --}}
+                <input type="date" name="tanggal" x-model="tanggal" onchange="this.form.submit()"
+                       class="border border-gray-200 rounded-lg text-sm px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-cyan-600 bg-white">
+
+                {{-- Filter Bulan --}}
+                <select name="bulan" x-model="bulan" onchange="this.form.submit()"
+                        class="border border-gray-200 rounded-lg text-sm px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-cyan-600 bg-white">
+                    <option value="">Semua Bulan</option>
+                    @foreach (range(1, 12) as $m)
+                        <option value="{{ $m }}" @selected($bulanFilter == $m)>
+                            {{ \Carbon\Carbon::create()->month($m)->translatedFormat('F') }}
+                        </option>
+                    @endforeach
+                </select>
+
+                {{-- Filter Tahun --}}
+                <select name="tahun" x-model="tahun" onchange="this.form.submit()"
+                        class="border border-gray-200 rounded-lg text-sm px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-cyan-600 bg-white">
+                    <option value="">Semua Tahun</option>
+                    @foreach ($tahunOptions as $y)
+                        <option value="{{ $y }}" @selected($tahunFilter == $y)>{{ $y }}</option>
+                    @endforeach
+                </select>
+
+                @if ($search || $ruanganFilter || ($tanggalFilter ?? false) || ($bulanFilter ?? false) || ($tahunFilter ?? false))
+                    <a href="{{ route('admin.riwayat') }}"
+                       class="flex items-center px-3 py-2.5 text-sm text-gray-500 hover:text-red-600 transition">
+                        Reset
+                    </a>
+                @endif
             </form>
         </div>
 
