@@ -27,7 +27,7 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             @forelse ($jadwalHariIni as $booking)
-            <x-booking-card :booking="$booking" :editable="true" />
+            <x-booking-card :booking="$booking" :editable="true"/>
             @empty
             <p class="text-gray-400 text-sm col-span-3">Tidak ada jadwal hari ini.</p>
             @endforelse

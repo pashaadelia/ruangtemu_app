@@ -108,19 +108,6 @@
 
                 </div>
 
-                {{-- Ingat saya --}}
-                <div class="flex items-center">
-                    <input
-                        id="remember"
-                        type="checkbox"
-                        name="remember"
-                        class="w-4 h-4 rounded border-slate-300 text-cyan-600 focus:ring-cyan-500"
-                    >
-                    <label for="remember" class="ml-2 text-sm text-slate-700">
-                        Ingat saya di perangkat ini
-                    </label>
-                </div>
-
                 {{-- Tombol Masuk --}}
                 <button
                     type="submit"

@@ -1,12 +1,7 @@
-@props(['booking', 'editable' => false])
+@props(['booking', 'editable' => false, 'showStatus' => true])
 
 @php
-    $statusConfig = [
-        1 => ['label' => 'Disetujui',  'class' => 'bg-blue-100 text-blue-700'],
-        2 => ['label' => 'Dibatalkan', 'class' => 'bg-red-100 text-red-700'],
-        3 => ['label' => 'Selesai',    'class' => 'bg-green-100 text-green-700'],
-    ];
-    $status = $statusConfig[$booking->status_booking] ?? $statusConfig[1];
+    $status = $booking->computed_status;
 
     $detailRoute = request()->is('admin/*')
         ? route('admin.booking.show', $booking->id)
@@ -21,9 +16,11 @@
    class="block bg-white border border-gray-200 rounded-xl p-5 hover:shadow-md hover:border-cyan-300 transition cursor-pointer">
     <div class="flex items-start justify-between mb-1">
         <h3 class="font-bold text-gray-900">{{ $booking->ruangan->nama_ruangan }}</h3>
-        <span class="text-xs font-medium px-3 py-1 rounded-full whitespace-nowrap {{ $status['class'] }}">
-            {{ $status['label'] }}
-        </span>
+        @if ($showStatus)
+            <span class="text-xs font-medium px-3 py-1 rounded-full whitespace-nowrap {{ $status['class'] }}">
+                {{ $status['label'] }}
+            </span>
+        @endif
     </div>
 
     <p class="text-gray-500 text-sm mb-3">{{ $booking->nama_rapat }}</p>
