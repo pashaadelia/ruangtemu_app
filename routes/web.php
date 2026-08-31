@@ -46,5 +46,5 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 // User (Satpam) - tanpa auth
 Route::prefix('user')->name('user.')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\User\JadwalController::class, 'index'])->name('dashboard');
-    Route::get('/booking/{id}', [\App\Http\Controllers\User\JadwalController::class, 'show'])->name('booking.show');
+    Route::get('/booking/{booking}', [\App\Http\Controllers\User\JadwalController::class, 'show'])->name('booking.show');
 });
