@@ -1,5 +1,5 @@
 <x-layouts.user title="Jadwal Hari Ini - RuangTemu">
-    <div x-data="{ search: '{{ request('search') }}', ruangan: '{{ request('ruangan') }}' }">
+    <div x-data="{ search: @js(request('search')), ruangan: @js(request('ruangan')) }">
 
         {{-- Header --}}
         <div class="flex items-center gap-3 mb-6">
