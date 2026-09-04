@@ -88,7 +88,24 @@
                                 </select>
                             </div>
                         </div>
-
+                        
+                        {{-- Info Kapasitas & Fasilitas Ruangan --}}
+                        <div x-show="idRuangan" x-cloak
+                            class="-mt-2 mb-6 flex items-start gap-3 rounded-xl bg-cyan-50/60 border border-cyan-100 px-4 py-3">
+                            <div class="w-9 h-9 flex items-center justify-center bg-cyan-100 rounded-lg shrink-0">
+                                <svg class="w-4 h-4 text-cyan-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4" />
+                                </svg>
+                            </div>
+                            <div class="text-sm">
+                                <p class="font-semibold text-gray-900">Kapasitas Ruangan</p>
+                                <p class="text-gray-600 mt-0.5">
+                                    Ruangan ini mendukung fasilitas: <span class="font-medium" x-text="fasilitasTerpilih"></span>.
+                                    Kapasitas maksimal <span class="font-medium" x-text="kapasitasTerpilih"></span> orang.
+                                </p>
+                            </div>
+                        </div>
+                        
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1.5">
                                 Date <span class="text-red-500">*</span>

@@ -29,11 +29,6 @@ class BookingController extends Controller
             return back()->withErrors(['jam_masuk' => 'Ruangan sudah dibooking pada rentang waktu tersebut.'])->withInput();
         }
 
-        $ruangan = Ruangan::findOrFail($validated['id_ruangan']);
-        if ($validated['total_peserta'] > $ruangan->kapasitas) {
-            return back()->withErrors(['total_peserta' => "Total peserta melebihi kapasitas ruangan ({$ruangan->kapasitas} orang)."])->withInput();
-        }
-
         // status_booking sengaja TIDAK diisi (null) saat pertama dibuat.
         // Statusnya nanti otomatis dihitung dari jam rapat (lihat Booking::getComputedStatusAttribute).
         // Admin hanya bisa mengubahnya jadi "Dibatalkan" lewat halaman Edit.
@@ -59,11 +54,6 @@ class BookingController extends Controller
         $bentrok = $this->cekBentrok($validated, $booking->id);
         if ($bentrok) {
             return back()->withErrors(['jam_masuk' => 'Ruangan sudah dibooking pada rentang waktu tersebut.'])->withInput();
-        }
-
-        $ruangan = Ruangan::findOrFail($validated['id_ruangan']);
-        if ($validated['total_peserta'] > $ruangan->kapasitas) {
-            return back()->withErrors(['total_peserta' => "Total peserta melebihi kapasitas ruangan ({$ruangan->kapasitas} orang)."])->withInput();
         }
 
         $booking->update($validated);
