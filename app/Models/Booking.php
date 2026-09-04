@@ -8,9 +8,20 @@ use Illuminate\Database\Eloquent\Model;
 class Booking extends Model
 {
     protected $fillable = [
-        'nama_rapat', 'tujuan_rapat', 'tanggal', 'jam_masuk', 'jam_keluar',
-        'id_ruangan', 'id_divisi', 'nama_penanggung_jawab', 'nama_tamu',
-        'total_peserta', 'catatan', 'informasi_tambahan', 'status_booking',
+        'nama_rapat',
+        'tujuan_rapat',
+        'tanggal',
+        'jam_masuk',
+        'jam_keluar',
+        'id_ruangan',
+        'id_divisi',
+        'nama_penanggung_jawab',
+        'nama_tamu',
+        'total_peserta',
+        'catatan_konsumsi',
+        'catatan_fasilitas',
+        'informasi_tambahan',
+        'status_booking',
     ];
 
     public function ruangan()
@@ -39,8 +50,8 @@ class Booking extends Model
         }
 
         $tanggal = Carbon::parse($this->tanggal)->format('Y-m-d');
-        $mulai   = Carbon::parse($tanggal.' '.Carbon::parse($this->jam_masuk)->format('H:i:s'));
-        $selesai = Carbon::parse($tanggal.' '.Carbon::parse($this->jam_keluar)->format('H:i:s'));
+        $mulai   = Carbon::parse($tanggal . ' ' . Carbon::parse($this->jam_masuk)->format('H:i:s'));
+        $selesai = Carbon::parse($tanggal . ' ' . Carbon::parse($this->jam_keluar)->format('H:i:s'));
         $now     = Carbon::now();
 
         if ($now->lt($mulai)) {

@@ -88,7 +88,7 @@
                                 </select>
                             </div>
                         </div>
-                        
+
                         {{-- Info Kapasitas & Fasilitas Ruangan --}}
                         <div x-show="idRuangan" x-cloak
                             class="-mt-2 mb-6 flex items-start gap-3 rounded-xl bg-cyan-50/60 border border-cyan-100 px-4 py-3">
@@ -105,7 +105,7 @@
                                 </p>
                             </div>
                         </div>
-                        
+
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1.5">
                                 Date <span class="text-red-500">*</span>
@@ -199,8 +199,22 @@
                         <span class="w-6 h-6 flex items-center justify-center bg-blue-600 text-white text-xs font-bold rounded-full">3</span>
                         <h2 class="text-xl font-bold text-gray-900">Catatan</h2>
                     </div>
-                    <textarea name="catatan" rows="4"
-                        class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-cyan-500 resize-none">{{ old('catatan') }}</textarea>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">Catatan Konsumsi (Opsional)</label>
+                            <textarea name="catatan_konsumsi" rows="4"
+                                placeholder="Contoh: Snack + kopi untuk 20 orang"
+                                class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 resize-none">{{ old('catatan_konsumsi') }}</textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">Catatan Fasilitas (Opsional)</label>
+                            <textarea name="catatan_fasilitas" rows="4"
+                                placeholder="Contoh: Butuh proyektor tambahan"
+                                class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 resize-none">{{ old('catatan_fasilitas') }}</textarea>
+                        </div>
+                    </div>
                 </div>
 
                 {{-- Submit --}}
@@ -215,117 +229,141 @@
     </div>
 
     <script>
-        function bookingForm() {
-            return {
-                tanggal: '{{ old('tanggal') }}',
-                idRuangan: '{{ old('id_ruangan') }}',
-                jamMulai: '{{ old('jam_masuk') }}',
-                jamSelesai: '{{ old('jam_keluar') }}',
-                totalPeserta: {{ old('total_peserta', 1) }},
-                terisiList: [],
-                kapasitasTerpilih: '-',
-                fasilitasTerpilih: '-',
-                timeSlots: @json($timeSlots),
+    function bookingForm() {
+        return {
+            tanggal: @json(old('tanggal', '')),
+            idRuangan: @json(old('id_ruangan', '')),
+            jamMulai: @json(old('jam_masuk', '')),
+            jamSelesai: @json(old('jam_keluar', '')),
+            totalPeserta: @json(old('total_peserta', 1)),
 
-                init() {
-                    this.ruanganDipilih();
-                    if (this.idRuangan && this.tanggal) {
-                        this.cekAvailability();
+            terisiList: [],
+            kapasitasTerpilih: '-',
+            fasilitasTerpilih: '-',
+            timeSlots: @json($timeSlots),
+
+            init() {
+                this.ruanganDipilih();
+
+                if (this.idRuangan && this.tanggal) {
+                    this.cekAvailability();
+                }
+            },
+
+            ruanganDipilih() {
+                const select = document.querySelector('select[name="id_ruangan"]');
+                const opt = select.options[select.selectedIndex];
+
+                this.kapasitasTerpilih =
+                    opt?.dataset?.kapasitas || '-';
+
+                this.fasilitasTerpilih =
+                    opt?.dataset?.fasilitas || '-';
+            },
+
+            resetSelection() {
+                this.jamMulai = '';
+                this.jamSelesai = '';
+                this.terisiList = [];
+            },
+
+            onRuanganChange() {
+                this.ruanganDipilih();
+                this.resetSelection();
+                this.cekAvailability();
+            },
+
+            onTanggalChange() {
+                this.resetSelection();
+                this.cekAvailability();
+            },
+
+            isTerisi(slot) {
+                return this.terisiList.includes(slot);
+            },
+
+            inRange(slot) {
+                if (!this.jamMulai) return false;
+
+                if (!this.jamSelesai) {
+                    return slot === this.jamMulai;
+                }
+
+                return slot >= this.jamMulai &&
+                       slot <= this.jamSelesai;
+            },
+
+            rangeHasConflict(start, end) {
+                const startIdx = this.timeSlots.indexOf(start);
+                const endIdx = this.timeSlots.indexOf(end);
+
+                for (let i = startIdx; i < endIdx; i++) {
+                    if (this.terisiList.includes(this.timeSlots[i])) {
+                        return true;
                     }
-                },
+                }
 
-                ruanganDipilih() {
-                    const select = document.querySelector('select[name="id_ruangan"]');
-                    const opt = select.options[select.selectedIndex];
-                    this.kapasitasTerpilih = opt?.dataset?.kapasitas || '-';
-                    this.fasilitasTerpilih = opt?.dataset?.fasilitas || '-';
-                },
+                return false;
+            },
 
-                resetSelection() {
-                    this.jamMulai = '';
+            pilihSlot(slot) {
+                if (this.isTerisi(slot)) return;
+
+                if (!this.jamMulai ||
+                    (this.jamMulai && this.jamSelesai)) {
+
+                    this.jamMulai = slot;
                     this.jamSelesai = '';
-                    this.terisiList = [];
-                },
+                    return;
+                }
 
-                onRuanganChange() {
-                    this.ruanganDipilih();
-                    this.resetSelection();
-                    this.cekAvailability();
-                },
+                if (slot <= this.jamMulai) {
+                    this.jamMulai = slot;
+                    this.jamSelesai = '';
+                    return;
+                }
 
-                onTanggalChange() {
-                    this.resetSelection();
-                    this.cekAvailability();
-                },
+                if (this.rangeHasConflict(this.jamMulai, slot)) {
+                    this.jamMulai = slot;
+                    this.jamSelesai = '';
+                    return;
+                }
 
-                isTerisi(slot) {
-                    return this.terisiList.includes(slot);
-                },
+                this.jamSelesai = slot;
+            },
 
-                inRange(slot) {
-                    if (!this.jamMulai) return false;
-                    if (!this.jamSelesai) return slot === this.jamMulai;
-                    return slot >= this.jamMulai && slot <= this.jamSelesai;
-                },
+            slotClasses(slot) {
+                if (this.isTerisi(slot)) {
+                    return 'bg-gray-100 border-gray-200 text-gray-300 cursor-not-allowed';
+                }
 
-                rangeHasConflict(start, end) {
-                    const startIdx = this.timeSlots.indexOf(start);
-                    const endIdx = this.timeSlots.indexOf(end);
-                    for (let i = startIdx; i < endIdx; i++) {
-                        if (this.terisiList.includes(this.timeSlots[i])) return true;
-                    }
-                    return false;
-                },
+                if (this.inRange(slot)) {
+                    return 'bg-cyan-600 border-cyan-600 text-white';
+                }
 
-                pilihSlot(slot) {
-                    if (this.isTerisi(slot)) return;
+                return 'bg-white border-gray-300 text-gray-700 hover:border-cyan-400';
+            },
 
-                    // Belum ada jam mulai, atau seleksi sebelumnya sudah lengkap -> mulai baru
-                    if (!this.jamMulai || (this.jamMulai && this.jamSelesai)) {
-                        this.jamMulai = slot;
-                        this.jamSelesai = '';
-                        return;
-                    }
+            async cekAvailability() {
+                if (!this.idRuangan || !this.tanggal) return;
 
-                    // Klik jam yang sama/lebih awal dari jam mulai -> reset mulai dari sini
-                    if (slot <= this.jamMulai) {
-                        this.jamMulai = slot;
-                        this.jamSelesai = '';
-                        return;
-                    }
+                try {
+                    const res = await fetch(
+                        `{{ route('admin.booking.availability') }}?id_ruangan=${this.idRuangan}&tanggal=${this.tanggal}`
+                    );
 
-                    // Ada slot terisi di tengah rentang -> tidak boleh, mulai ulang dari klik ini
-                    if (this.rangeHasConflict(this.jamMulai, slot)) {
-                        this.jamMulai = slot;
-                        this.jamSelesai = '';
-                        return;
-                    }
+                    const data = await res.json();
 
-                    this.jamSelesai = slot;
-                },
+                    this.terisiList = data.terisi || [];
 
-                slotClasses(slot) {
-                    if (this.isTerisi(slot)) {
-                        return 'bg-gray-100 border-gray-200 text-gray-300 cursor-not-allowed';
-                    }
-                    if (this.inRange(slot)) {
-                        return 'bg-cyan-600 border-cyan-600 text-white';
-                    }
-                    return 'bg-white border-gray-300 text-gray-700 hover:border-cyan-400';
-                },
-
-                async cekAvailability() {
-                    if (!this.idRuangan || !this.tanggal) return;
-
-                    try {
-                        const res = await fetch(`{{ route('admin.booking.availability') }}?id_ruangan=${this.idRuangan}&tanggal=${this.tanggal}`);
-                        const data = await res.json();
-                        this.terisiList = data.terisi || [];
-                    } catch (e) {
-                        console.error('Gagal cek ketersediaan:', e);
-                    }
+                } catch (e) {
+                    console.error(
+                        'Gagal cek ketersediaan:',
+                        e
+                    );
                 }
             }
         }
-    </script>
+    }
+</script>
 </x-layouts.detail>

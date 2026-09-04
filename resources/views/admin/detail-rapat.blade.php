@@ -127,6 +127,32 @@
                     </div>
                 @endif
 
+                {{-- Card Catatan Konsumsi & Fasilitas --}}
+                @if ($booking->catatan_konsumsi || $booking->catatan_fasilitas)
+                    <div class="bg-white rounded-xl shadow-sm p-6 space-y-5">
+                        <div class="flex items-center gap-2">
+                            <svg class="w-5 h-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            <h2 class="font-bold text-gray-900">Catatan</h2>
+                        </div>
+
+                        @if ($booking->catatan_konsumsi)
+                            <div>
+                                <p class="text-xs text-gray-400 font-medium tracking-wide mb-1.5">CATATAN KONSUMSI</p>
+                                <p class="text-sm text-gray-600 leading-relaxed">{{ $booking->catatan_konsumsi }}</p>
+                            </div>
+                        @endif
+
+                        @if ($booking->catatan_fasilitas)
+                            <div class="{{ $booking->catatan_konsumsi ? 'pt-4 border-t border-gray-100' : '' }}">
+                                <p class="text-xs text-gray-400 font-medium tracking-wide mb-1.5">CATATAN FASILITAS</p>
+                                <p class="text-sm text-gray-600 leading-relaxed">{{ $booking->catatan_fasilitas }}</p>
+                            </div>
+                        @endif
+                    </div>
+                @endif
+
                 <div class="bg-white rounded-xl shadow-sm p-6">
                     <h2 class="font-bold text-gray-900 mb-4">Fasilitas Ruangan</h2>
                     <div class="grid grid-cols-2 gap-3">
