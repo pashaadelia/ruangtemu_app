@@ -109,7 +109,8 @@ class BookingController extends Controller
             'nama_penanggung_jawab' => 'required|string|max:255',
             'nama_tamu' => 'nullable|string|max:255',
             'total_peserta' => 'required|integer|min:1',
-            'catatan' => 'nullable|string',
+            'catatan_konsumsi' => 'nullable|string',
+            'catatan_fasilitas' => 'nullable|string',
             'status_booking' => 'nullable|integer|in:1',
         ]);
     }
